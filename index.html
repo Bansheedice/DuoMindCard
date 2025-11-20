@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Jeu de Cartes Jumeaux</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #222;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 { margin-bottom: 10px; }
+
+    #info {
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    #game {
+        display: grid;
+        grid-template-columns: repeat(4, 100px);
+        grid-gap: 15px;
+    }
+
+    .card {
+        width: 100px;
+        height: 100px;
+        background: #444;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    .card.flipped {
+        background: #fff;
+        color: #000;
+        transform: rotateY(180deg);
+        cursor: default;
+    }
+</style>
+</head>
+<body>
+
+<h1>Jeu de Cartes Jumeaux</h1>
+
+<div id="info">
+    <div id="clickStatus">Cliquez sur la première carte</div>
+    <div id="attempts">Tentatives : 0</div>
+    <div id="remaining">Paires restantes : 8</div>
+</div>
+
+<div id="game"></div>
+
+<script>
+const symbols = ["🍎","🍐","🍇","🍊","🍓","🍌","🍍","🥝"];
+let cards = [...symbols, ...symbols];  // double chaque symbole
+
+// Mélange
+cards = cards.sort(() => Math.random() - 0.5);
+
+const game = document.getElementById("game");
+const clickStatus = document.getElementById("clickStatus");
+const attemptsDisplay = document.getElementById("attempts");
+const remainingDisplay = document.getElementById("remaining");
+
+let firstCard = null;
+let lock = false;
+let attempts = 0;
+let pairsRemaining = symbols.length;
+
+// Affichage initial
+remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
+
+// Création des cartes
+cards.forEach(symbol => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.dataset.symbol = symbol;
+
+    card.addEventListener("click", () => {
+        if (lock || card.classList.contains("flipped")) return;
+
+        card.textContent = symbol;
+        card.classList.add("flipped");
+
+        if (!firstCard) {
+            firstCard = card;
+            clickStatus.textContent = "Sélectionnez la seconde carte";
+        } else {
+            // Deuxième carte
+            attempts++;
+            attemptsDisplay.textContent = "Tentatives : " + attempts;
+
+            if (firstCard.dataset.symbol === card.dataset.symbol) {
+                // Paire trouvée
+                pairsRemaining--;
+                remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
+
+                firstCard = null;
+                clickStatus.textContent = "Cliquez sur la première carte";
+
+                if (pairsRemaining === 0) {
+                    clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
+                }
+
+            } else {
+                // Mauvaise paire → on retourne les cartes
+                lock = true;
+                clickStatus.textContent = "Raté ! Les cartes vont se retourner…";
+
+                setTimeout(() => {
+                    card.classList.remove("flipped");
+                    card.textContent = "";
+
+                    firstCard.classList.remove("flipped");
+                    firstCard.textContent = "";
+
+                    firstCard = null;
+                    lock = false;
+                    clickStatus.textContent = "Cliquez sur la première carte";
+                }, 800);
+            }
+        }
+    });
+
+    game.appendChild(card);
+});
+</script>
+
+</body>
+</html>
