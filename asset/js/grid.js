@@ -5,9 +5,7 @@ const symbols = [
     "🍞","🧀","🥨","🥐","🍪","🍰","🧁","🍩"
 ];
 
-let cards = [...symbols, ...symbols];  // double chaque symbole
-
-// Mélange
+let cards = [...symbols, ...symbols];
 cards = cards.sort(() => Math.random() - 0.5);
 
 const game = document.getElementById("game");
@@ -20,7 +18,6 @@ let lock = false;
 let attempts = 0;
 let pairsRemaining = symbols.length;
 
-// Affichage initial
 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
 
 // Création des cartes
@@ -29,48 +26,58 @@ cards.forEach(symbol => {
     card.classList.add("card");
     card.dataset.symbol = symbol;
 
+    // Faces
+    const back = document.createElement("div");
+    back.classList.add("card-face", "card-back");
+
+    const front = document.createElement("div");
+    front.classList.add("card-face", "card-front");
+    front.textContent = symbol;
+
+    card.appendChild(back);
+    card.appendChild(front);
+
+    // Clic
     card.addEventListener("click", () => {
         if (lock || card.classList.contains("flipped")) return;
 
-        card.textContent = symbol;
         card.classList.add("flipped");
 
         if (!firstCard) {
             firstCard = card;
             clickStatus.textContent = "Sélectionnez la seconde carte";
         } else {
-            // Deuxième carte
             attempts++;
             attemptsDisplay.textContent = "Tentatives : " + attempts;
 
             if (firstCard.dataset.symbol === card.dataset.symbol) {
                 // Paire trouvée
+                card.classList.add("matched");
+                firstCard.classList.add("matched");
+
                 pairsRemaining--;
                 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
 
-                firstCard = null;
                 clickStatus.textContent = "Cliquez sur la première carte";
+                firstCard = null;
 
                 if (pairsRemaining === 0) {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
                 }
 
             } else {
-                // Mauvaise paire → on retourne les cartes
+                // Mauvaise paire
                 lock = true;
                 clickStatus.textContent = "Raté ! Les cartes vont se retourner…";
 
                 setTimeout(() => {
                     card.classList.remove("flipped");
-                    card.textContent = "";
-
                     firstCard.classList.remove("flipped");
-                    firstCard.textContent = "";
 
                     firstCard = null;
                     lock = false;
                     clickStatus.textContent = "Cliquez sur la première carte";
-                }, 800);
+                }, 900);
             }
         }
     });

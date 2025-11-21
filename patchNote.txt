@@ -3,12 +3,11 @@ v0.02.0 = séparation css et js + rédaction README.md
 v0.03.0 = licence MIT
 v0.03.1 = responsive start
 v0.04.0 = grille 8 x 8 
+v0.05.0 = flip optimiser + polish animation
 
 ** Next step ** 
 - ajouter un bouton reset
-- optimiser les flips
 - optimiser le responsive
-- Animations avancées
 - Effets sonores
 - Mode difficile
 - Menu principal
