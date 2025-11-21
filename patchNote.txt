@@ -1,3 +1,4 @@
 v0.01.0 = Nice prototype
 v0.02.0 = séparation css et js + rédaction README.md 
-v0.03.0 = ajout licence MIT
+v0.03.0 = licence MIT
+v0.03.1 = responsive start
