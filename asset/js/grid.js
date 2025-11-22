@@ -17,8 +17,17 @@ let firstCard = null;
 let lock = false;
 let attempts = 0;
 let pairsRemaining = symbols.length;
+let startTime = Date.now();
 
 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
+
+// Fonction pour formater le temps écoulé
+function formatTime(milliseconds) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}m ${seconds}s`;
+}
 
 // Création des cartes
 cards.forEach(symbol => {
@@ -55,6 +64,9 @@ cards.forEach(symbol => {
                 card.classList.add("matched");
                 firstCard.classList.add("matched");
 
+                // Ajouter au ticket
+                addToTicket(card.dataset.symbol);
+
                 pairsRemaining--;
                 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
 
@@ -63,6 +75,14 @@ cards.forEach(symbol => {
 
                 if (pairsRemaining === 0) {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
+                    
+                    // Calculer le temps écoulé
+                    const elapsedTime = formatTime(Date.now() - startTime);
+                    
+                    // Afficher l'overlay après un court délai
+                    setTimeout(() => {
+                        showResultOverlay(attempts, elapsedTime);
+                    }, 1000);
                 }
 
             } else {
