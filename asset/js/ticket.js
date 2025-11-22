@@ -45,7 +45,7 @@ function showResultOverlay(attempts, elapsedTime) {
 
     // Titre
     const title = document.createElement("h2");
-    title.textContent = "🎉 FÉLICITATION 🎉";
+    title.textContent = "🎉 RÉSULTAT 🎉";
     title.style.cssText = `
         color: #4caf50;
         font-size: 2.5rem;
@@ -134,6 +134,83 @@ function showResultOverlay(attempts, elapsedTime) {
     ticketDiv.appendChild(ticketGrid);
     ticketDiv.appendChild(ticketNumber);
 
+    // Conteneur des boutons
+    const buttonsContainer = document.createElement("div");
+    buttonsContainer.style.cssText = `
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+    `;
+
+    // Bouton voir la grille
+    const viewGridButton = document.createElement("button");
+    viewGridButton.textContent = "🎯 Voir la grille";
+    viewGridButton.style.cssText = `
+        background: #2196F3;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    `;
+    viewGridButton.onmouseover = () => {
+        viewGridButton.style.background = "#1976D2";
+        viewGridButton.style.transform = "scale(1.05)";
+    };
+    viewGridButton.onmouseout = () => {
+        viewGridButton.style.background = "#2196F3";
+        viewGridButton.style.transform = "scale(1)";
+    };
+    viewGridButton.onclick = () => {
+        // Cacher le contenu du résultat
+        content.style.display = "none";
+        
+        // Réduire l'opacité de l'overlay pour mieux voir la grille
+        overlay.style.background = "rgba(0, 0, 0, 0)";
+        
+        // Créer le bouton "Voir le ticket" en bas
+        const backButton = document.createElement("button");
+        backButton.id = "backToTicketButton";
+        backButton.textContent = "🎫 Voir le ticket";
+        backButton.style.cssText = `
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FF9800;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        `;
+        backButton.onmouseover = () => {
+            backButton.style.background = "#F57C00";
+            backButton.style.transform = "translateX(-50%) scale(1.05)";
+        };
+        backButton.onmouseout = () => {
+            backButton.style.background = "#FF9800";
+            backButton.style.transform = "translateX(-50%) scale(1)";
+        };
+        backButton.onclick = () => {
+            // Restaurer l'overlay et afficher le contenu du ticket
+            overlay.style.background = "rgba(0, 0, 0, 0.85)";
+            content.style.display = "block";
+            backButton.remove();
+        };
+        
+        document.body.appendChild(backButton);
+    };
+
     // Bouton rejouer
     const replayButton = document.createElement("button");
     replayButton.textContent = "🔄 Rejouer";
@@ -145,7 +222,6 @@ function showResultOverlay(attempts, elapsedTime) {
         font-size: 1.2rem;
         border-radius: 8px;
         cursor: pointer;
-        margin-top: 20px;
         transition: all 0.3s ease;
         font-weight: bold;
     `;
@@ -161,11 +237,15 @@ function showResultOverlay(attempts, elapsedTime) {
         location.reload();
     };
 
+    // Ajouter les boutons au conteneur
+    buttonsContainer.appendChild(viewGridButton);
+    buttonsContainer.appendChild(replayButton);
+
     // Assembler le contenu
     content.appendChild(title);
     content.appendChild(scoreDiv);
     content.appendChild(ticketDiv);
-    content.appendChild(replayButton);
+    content.appendChild(buttonsContainer);
     overlay.appendChild(content);
 
     // Ajouter les animations CSS
