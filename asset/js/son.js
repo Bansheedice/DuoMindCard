@@ -117,9 +117,9 @@ document.addEventListener("click", () => audioManager.unlock(), { once: true });
 
 const playlist = [
     { name: "1 - Piano Background Music Soft", auteur: "Viacheslav Starostin", link: "https://pixabay.com/fr/music/classique-moderne-piano-background-music-soft-344547/", url: "asset/music/PianoBackground.mp3" },
-    { name: "2 - Lofi Chill", auteur: "DELOSound", link: "https://pixabay.com/fr/music/beats-lofi-chill-438668/", url: "asset/music/LofiChill.mp3" },
-    { name: "3 - Lofi Background", auteur: "DELOSound", link: "https://pixabay.com/fr/music/beats-lofi-background-music-438667/", url: "asset/music/LofiBackground.mp3" },
-    { name: "4 - Nature Documentary", auteur: "DELOSound", link: "https://pixabay.com/fr/music/ambiant-nature-documentary-427642/", url: "asset/music/NatureDocumentary.mp3" }
+    { name: "2 - Lofi Chill", auteur: "DELOSound", link: "https://pixabay.com/fr/music/beats-lofi-chill-medium-version-159456/", url: "asset/music/LofiChill.mp3" },
+    { name: "3 - Lofi Background", auteur: "DELOSound", link: "https://pixabay.com/fr/music/beats-lofi-background-256905/", url: "asset/music/LofiBackground.mp3" },
+    { name: "4 - Nature Documentary", auteur: "DELOSound", link: "https://pixabay.com/fr/music/ambient-nature-documentary-calm-atmospheric-268832/", url: "asset/music/NatureDocumentary.mp3" }
 ];
 
 class MusicPlayer {
@@ -138,6 +138,7 @@ class MusicPlayer {
         this.trackAuthor = document.getElementById("trackAuthor");
         this.playBtn = document.getElementById("play");
         this.volumeSlider = document.getElementById("volume");
+        this.volumePercent = document.getElementById("volumePercent");
         this.muteBtn = document.getElementById("muteButton");
         
         console.log("MusicPlayer initialisé", this.trackAuthor); // Debug
@@ -145,7 +146,7 @@ class MusicPlayer {
         this.playBtn.addEventListener("click", () => this.togglePlay());
         document.getElementById("prev").addEventListener("click", () => this.prev());
         document.getElementById("next").addEventListener("click", () => this.next(true));
-        this.volumeSlider.addEventListener("input", (e) => this.audio.volume = e.target.value / 100);
+        this.volumeSlider.addEventListener("input", (e) => this.updateVolume(e.target.value));
         this.muteBtn.addEventListener("click", () => this.toggleMute());
         
         this.loadTrack(false);
@@ -162,6 +163,9 @@ class MusicPlayer {
         this.audio.src = track.url;
         
         this.trackName.classList.remove("scrolling");
+        
+        // Initialiser le gradient du volume
+        this.updateVolume(this.volumeSlider.value);
         
         if (autoPlay) {
             this.audio.play().catch(err => console.log("Autoplay bloqué:", err));
@@ -199,6 +203,15 @@ class MusicPlayer {
         this.audio.muted = this.isMuted;
         audioManager.master.gain.value = this.isMuted ? 0 : 1;
         this.muteBtn.textContent = this.isMuted ? "🔇" : "🔊";
+    }
+    
+    updateVolume(value) {
+        this.audio.volume = value / 100;
+        this.volumePercent.textContent = value + "%";
+        
+        // Mise à jour du gradient de la barre
+        const percent = value;
+        this.volumeSlider.style.background = `linear-gradient(to right, #4caf50 0%, #4caf50 ${percent}%, #555 ${percent}%, #555 100%)`;
     }
 }
 
