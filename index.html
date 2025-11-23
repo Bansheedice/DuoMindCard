@@ -20,7 +20,26 @@
 
 <div id="game"></div>
 
-<button id="muteButton">🔊</button>
+<!-- Lecteur de musique intégré -->
+<div id="musicPlayer">
+    <div id="trackInfo">
+        <div id="trackNameBox">
+            <div id="trackName">Chargement…</div>
+        </div>
+        <div id="trackAuthor"></div>
+    </div>
+    
+    <div class="musicControls">
+        <button id="prev">⏮️</button>
+        <button id="play">▶️</button>
+        <button id="next">⏭️</button>
+        <button id="muteButton">🔊</button>
+    </div>
+    
+    <div class="volumeContainer">
+        <input type="range" id="volume" min="0" max="100" value="50">
+    </div>
+</div>
 
 <!-- Charger les scripts dans le bon ordre -->
 <script src="asset/js/son.js"></script>

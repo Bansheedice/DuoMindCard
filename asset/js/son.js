@@ -1,3 +1,7 @@
+// ============================================
+// GESTIONNAIRE AUDIO POUR LES EFFETS SONORES
+// ============================================
+
 class AudioManager {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -38,7 +42,6 @@ class AudioManager {
         o.stop(this.ctx.currentTime + dur);
     }
 
-    // Styles procéduraux
     realiste = {
         flip: () => this._pitch(200, 260, 0.25, 0.06, "triangle"),
         draw: () => this._pulse(180, 0.2, 0.04, "sine"),
@@ -102,14 +105,98 @@ class AudioManager {
     play(type) {
         this[this.style][type]();
     }
-
-    toggleMute() {
-        this.master.gain.value = this.master.gain.value === 0 ? 1 : 0;
-    }
 }
 
 // Instance globale pour le jeu
 const audioManager = new AudioManager();
-
-// Débloquer l'audio au premier clic
 document.addEventListener("click", () => audioManager.unlock(), { once: true });
+
+// ============================================
+// GESTIONNAIRE DE MUSIQUE
+// ============================================
+
+const playlist = [
+    { name: "1 - Piano Background Music Soft", auteur: "Viacheslav Starostin", url: "asset/music/PianoBackground.mp3" },
+    { name: "2 - Lofi Chill", auteur: "DELOSound", url: "asset/music/LofiChill.mp3" },
+    { name: "3 - Lofi Background", auteur: "DELOSound", url: "asset/music/LofiBackground.mp3" },
+    { name: "4 - Nature Documentary", auteur: "DELOSound", url: "asset/music/NatureDocumentary.mp3" }
+];
+
+class MusicPlayer {
+    constructor() {
+        this.audio = new Audio();
+        this.audio.volume = 0.5;
+        this.index = 0;
+        this.isMuted = false;
+        
+        this.audio.addEventListener('ended', () => this.next(true));
+        this.init();
+    }
+    
+    init() {
+        this.trackName = document.getElementById("trackName");
+        this.trackAuthor = document.getElementById("trackAuthor");
+        this.playBtn = document.getElementById("play");
+        this.volumeSlider = document.getElementById("volume");
+        this.muteBtn = document.getElementById("muteButton");
+        
+        this.playBtn.addEventListener("click", () => this.togglePlay());
+        document.getElementById("prev").addEventListener("click", () => this.prev());
+        document.getElementById("next").addEventListener("click", () => this.next(true));
+        this.volumeSlider.addEventListener("input", (e) => this.audio.volume = e.target.value / 100);
+        this.muteBtn.addEventListener("click", () => this.toggleMute());
+        
+        this.loadTrack(false);
+    }
+    
+    loadTrack(autoPlay) {
+        const track = playlist[this.index];
+        this.trackName.textContent = track.name;
+        this.trackAuthor.textContent = track.auteur;
+        this.audio.src = track.url;
+        
+        this.trackName.classList.remove("scrolling");
+        
+        if (autoPlay) {
+            this.audio.play().catch(err => console.log("Autoplay bloqué:", err));
+            this.playBtn.textContent = "⏸️";
+            this.trackName.classList.add("scrolling");
+        } else {
+            this.playBtn.textContent = "▶️";
+        }
+    }
+    
+    togglePlay() {
+        if (this.audio.paused) {
+            this.audio.play();
+            this.playBtn.textContent = "⏸️";
+            this.trackName.classList.add("scrolling");
+        } else {
+            this.audio.pause();
+            this.playBtn.textContent = "▶️";
+            this.trackName.classList.remove("scrolling");
+        }
+    }
+    
+    next(autoPlay) {
+        this.index = (this.index + 1) % playlist.length;
+        this.loadTrack(autoPlay);
+    }
+    
+    prev() {
+        this.index = (this.index - 1 + playlist.length) % playlist.length;
+        this.loadTrack(true);
+    }
+    
+    toggleMute() {
+        this.isMuted = !this.isMuted;
+        this.audio.muted = this.isMuted;
+        audioManager.master.gain.value = this.isMuted ? 0 : 1;
+        this.muteBtn.textContent = this.isMuted ? "🔇" : "🔊";
+    }
+}
+
+let musicPlayer;
+document.addEventListener("DOMContentLoaded", () => {
+    musicPlayer = new MusicPlayer();
+});
