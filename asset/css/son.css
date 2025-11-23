@@ -52,6 +52,16 @@
     text-align: center;
 }
 
+#trackAuthor a {
+    color: #ccc;
+    text-decoration: none;
+}
+
+#trackAuthor a:hover {
+    color: #66bb6a;
+    transition: color 0.2s;
+}
+
 /* Contrôles musique */
 .musicControls {
     display: flex;

@@ -116,10 +116,10 @@ document.addEventListener("click", () => audioManager.unlock(), { once: true });
 // ============================================
 
 const playlist = [
-    { name: "1 - Piano Background Music Soft", auteur: "Viacheslav Starostin", url: "asset/music/PianoBackground.mp3" },
-    { name: "2 - Lofi Chill", auteur: "DELOSound", url: "asset/music/LofiChill.mp3" },
-    { name: "3 - Lofi Background", auteur: "DELOSound", url: "asset/music/LofiBackground.mp3" },
-    { name: "4 - Nature Documentary", auteur: "DELOSound", url: "asset/music/NatureDocumentary.mp3" }
+    { name: "1 - Piano Background Music Soft", auteur: "Viacheslav Starostin", link: "https://pixabay.com/fr/music/classique-moderne-piano-background-music-soft-344547/", url: "asset/music/PianoBackground.mp3" },
+    { name: "2 - Lofi Chill", auteur: "DELOSound", link: "https://pixabay.com/fr/music/beats-lofi-chill-438668/", url: "asset/music/LofiChill.mp3" },
+    { name: "3 - Lofi Background", auteur: "DELOSound", link: "https://pixabay.com/fr/music/beats-lofi-background-music-438667/", url: "asset/music/LofiBackground.mp3" },
+    { name: "4 - Nature Documentary", auteur: "DELOSound", link: "https://pixabay.com/fr/music/ambiant-nature-documentary-427642/", url: "asset/music/NatureDocumentary.mp3" }
 ];
 
 class MusicPlayer {
@@ -140,6 +140,8 @@ class MusicPlayer {
         this.volumeSlider = document.getElementById("volume");
         this.muteBtn = document.getElementById("muteButton");
         
+        console.log("MusicPlayer initialisé", this.trackAuthor); // Debug
+        
         this.playBtn.addEventListener("click", () => this.togglePlay());
         document.getElementById("prev").addEventListener("click", () => this.prev());
         document.getElementById("next").addEventListener("click", () => this.next(true));
@@ -152,7 +154,11 @@ class MusicPlayer {
     loadTrack(autoPlay) {
         const track = playlist[this.index];
         this.trackName.textContent = track.name;
-        this.trackAuthor.textContent = track.auteur;
+        
+        // Créer le lien pour l'auteur
+        this.trackAuthor.innerHTML = `<a href="${track.link}" target="_blank" rel="noopener noreferrer">${track.auteur}</a>`;
+        console.log("Lien créé:", track.link); // Debug
+        
         this.audio.src = track.url;
         
         this.trackName.classList.remove("scrolling");

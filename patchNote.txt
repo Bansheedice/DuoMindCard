@@ -10,9 +10,11 @@ v0.08.0 = polish swap grid / ticket
 v0.09.0 = Effets sonores
 v0.09.1 = bouton Muted
 v0.10.0 = interface musique
+v0.10.1 = redirection vers la musique hébergé
 
 ** Next step ** 
 - optimiser le responsive
 - Mode difficile
 - Menu principal
-- intégré les ressource musicaux
+- améliorer la barre de volume
+- ajout musique de victoire
