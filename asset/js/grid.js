@@ -55,14 +55,24 @@ cards.forEach(symbol => {
         if (!firstCard) {
             firstCard = card;
             clickStatus.textContent = "Sélectionnez la seconde carte";
+            
+            // Jouer le son de retournement (casino place)
+            audioManager.style = "casino";
+            audioManager.play("place");
         } else {
             attempts++;
             attemptsDisplay.textContent = "Tentatives : " + attempts;
 
             if (firstCard.dataset.symbol === card.dataset.symbol) {
-                // Paire trouvée
+                // Paire trouvée - jouer le son win (style réaliste) SANS jouer le son place
                 card.classList.add("matched");
                 firstCard.classList.add("matched");
+
+                // Jouer le son de victoire avec le même délai que l'animation
+                setTimeout(() => {
+                    audioManager.style = "realiste";
+                    audioManager.play("win");
+                }, 500); // 500ms = délai de l'animation
 
                 // Ajouter au ticket
                 addToTicket(card.dataset.symbol);
@@ -86,7 +96,10 @@ cards.forEach(symbol => {
                 }
 
             } else {
-                // Mauvaise paire
+                // Mauvaise paire - jouer le son place pour la seconde carte
+                audioManager.style = "casino";
+                audioManager.play("place");
+                
                 lock = true;
                 clickStatus.textContent = "Raté ! Les cartes vont se retourner…";
 
