@@ -1,3 +1,6 @@
+// ----------------------------
+// Données
+// ----------------------------
 const symbols = [
     "🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓",
     "🍒","🍑","🥭","🍍","🥝","🍅","🥑","🥥",
@@ -5,23 +8,44 @@ const symbols = [
     "🍞","🧀","🥨","🥐","🍪","🍰","🧁","🍩"
 ];
 
-let cards = [...symbols, ...symbols];
-cards = cards.sort(() => Math.random() - 0.5);
+let cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
 
+// ----------------------------
+// Éléments du DOM
+// ----------------------------
 const game = document.getElementById("game");
 const clickStatus = document.getElementById("clickStatus");
 const attemptsDisplay = document.getElementById("attempts");
 const remainingDisplay = document.getElementById("remaining");
+const muteButton = document.getElementById("muteButton");
 
+// ----------------------------
+// État du jeu
+// ----------------------------
 let firstCard = null;
 let lock = false;
 let attempts = 0;
 let pairsRemaining = symbols.length;
 let startTime = Date.now();
+let isMuted = false;
 
+// ----------------------------
+// Initialisation interface
+// ----------------------------
 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
 
-// Fonction pour formater le temps écoulé
+// ----------------------------
+// Gestion du son Mute / Unmute
+// ----------------------------
+muteButton.addEventListener("click", () => {
+    isMuted = !isMuted;
+    if(audioManager) audioManager.master.gain.value = isMuted ? 0 : 1;
+    muteButton.textContent = isMuted ? "🔇" : "🔊";
+});
+
+// ----------------------------
+// Fonction pour formater le temps
+// ----------------------------
 function formatTime(milliseconds) {
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -29,7 +53,18 @@ function formatTime(milliseconds) {
     return `${minutes}m ${seconds}s`;
 }
 
+// ----------------------------
+// Fonction pour jouer le son en tenant compte du mute
+// ----------------------------
+function playSound(type, style = "realiste") {
+    if (isMuted) return;
+    audioManager.style = style;
+    audioManager.play(type);
+}
+
+// ----------------------------
 // Création des cartes
+// ----------------------------
 cards.forEach(symbol => {
     const card = document.createElement("div");
     card.classList.add("card");
@@ -55,26 +90,19 @@ cards.forEach(symbol => {
         if (!firstCard) {
             firstCard = card;
             clickStatus.textContent = "Sélectionnez la seconde carte";
-            
-            // Jouer le son de retournement (casino place)
-            audioManager.style = "casino";
-            audioManager.play("place");
+            playSound("place", "casino"); // son retournement première carte
         } else {
             attempts++;
             attemptsDisplay.textContent = "Tentatives : " + attempts;
 
             if (firstCard.dataset.symbol === card.dataset.symbol) {
-                // Paire trouvée - jouer le son win (style réaliste) SANS jouer le son place
+                // Paire trouvée
                 card.classList.add("matched");
                 firstCard.classList.add("matched");
 
-                // Jouer le son de victoire avec le même délai que l'animation
-                setTimeout(() => {
-                    audioManager.style = "realiste";
-                    audioManager.play("win");
-                }, 500); // 500ms = délai de l'animation
+                // Son de victoire avec délai synchronisé à l'animation (0.5s)
+                setTimeout(() => playSound("win", "realiste"), 500);
 
-                // Ajouter au ticket
                 addToTicket(card.dataset.symbol);
 
                 pairsRemaining--;
@@ -85,28 +113,20 @@ cards.forEach(symbol => {
 
                 if (pairsRemaining === 0) {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
-                    
-                    // Calculer le temps écoulé
                     const elapsedTime = formatTime(Date.now() - startTime);
-                    
-                    // Afficher l'overlay après un court délai
-                    setTimeout(() => {
-                        showResultOverlay(attempts, elapsedTime);
-                    }, 1000);
+                    setTimeout(() => showResultOverlay(attempts, elapsedTime), 1000);
                 }
 
             } else {
-                // Mauvaise paire - jouer le son place pour la seconde carte
-                audioManager.style = "casino";
-                audioManager.play("place");
-                
+                // Mauvaise paire
+                playSound("place", "casino");
+
                 lock = true;
                 clickStatus.textContent = "Raté ! Les cartes vont se retourner…";
 
                 setTimeout(() => {
                     card.classList.remove("flipped");
                     firstCard.classList.remove("flipped");
-
                     firstCard = null;
                     lock = false;
                     clickStatus.textContent = "Cliquez sur la première carte";

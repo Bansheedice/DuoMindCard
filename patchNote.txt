@@ -8,6 +8,7 @@ v0.06.0 = Ticket de lotterie + score + relancer
 v0.07.0 = Revoir la grille fini
 v0.08.0 = polish swap grid / ticket
 v0.09.0 = Effets sonores
+v0.09.1 = bouton Muted
 
 ** Next step ** 
 - optimiser le responsive
