@@ -122,12 +122,19 @@ const playlist = [
     { name: "4 - Nature Documentary", auteur: "DELOSound", link: "https://pixabay.com/fr/music/ambient-nature-documentary-calm-atmospheric-268832/", url: "asset/music/NatureDocumentary.mp3" }
 ];
 
+const completeMusic = [
+    { name: "1 - Uplifting Funs", auteur: "AudioCoffee", link: "https://pixabay.com/music/happy-childrens-tunes-uplifting-funs-150192/", url: "asset/music/upLiftingFuns.mp3" },
+    { name: "2 - time technology echoes of purity", auteur: "Coma-Media", link: "https://pixabay.com/music/upbeat-time-technology-echoes-of-purity-11257/", url: "asset/music/timeTechnologyEchoesOfPurity.mp3" }
+];
+
 class MusicPlayer {
     constructor() {
         this.audio = new Audio();
         this.audio.volume = 0.5;
         this.index = 0;
         this.isMuted = false;
+        this.currentPlaylist = playlist;
+        this.isVictoryMode = false;
         
         this.audio.addEventListener('ended', () => this.next(true));
         this.init();
@@ -153,7 +160,7 @@ class MusicPlayer {
     }
     
     loadTrack(autoPlay) {
-        const track = playlist[this.index];
+        const track = this.currentPlaylist[this.index];
         this.trackName.textContent = track.name;
         
         // Créer le lien pour l'auteur
@@ -189,12 +196,12 @@ class MusicPlayer {
     }
     
     next(autoPlay) {
-        this.index = (this.index + 1) % playlist.length;
+        this.index = (this.index + 1) % this.currentPlaylist.length;
         this.loadTrack(autoPlay);
     }
     
     prev() {
-        this.index = (this.index - 1 + playlist.length) % playlist.length;
+        this.index = (this.index - 1 + this.currentPlaylist.length) % this.currentPlaylist.length;
         this.loadTrack(true);
     }
     
@@ -212,6 +219,20 @@ class MusicPlayer {
         // Mise à jour du gradient de la barre
         const percent = value;
         this.volumeSlider.style.background = `linear-gradient(to right, #4caf50 0%, #4caf50 ${percent}%, #555 ${percent}%, #555 100%)`;
+    }
+    
+    switchToVictoryMode() {
+        this.isVictoryMode = true;
+        this.currentPlaylist = completeMusic;
+        this.index = 0;
+        this.loadTrack(true);
+    }
+    
+    switchToNormalMode() {
+        this.isVictoryMode = false;
+        this.currentPlaylist = playlist;
+        this.index = 0;
+        this.loadTrack(true);
     }
 }
 

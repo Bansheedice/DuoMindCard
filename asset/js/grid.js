@@ -94,9 +94,18 @@ cards.forEach(symbol => {
                 if (pairsRemaining === 0) {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
                     const elapsedTime = formatTime(Date.now() - startTime);
-                    if (typeof showResultOverlay === 'function') {
-                        setTimeout(() => showResultOverlay(attempts, elapsedTime), 1000);
-                    }
+                    
+                    // Afficher d'abord l'overlay de résultat
+                    setTimeout(() => {
+                        if (typeof showResultOverlay === 'function') {
+                            showResultOverlay(attempts, elapsedTime);
+                        }
+                        
+                        // Basculer vers la musique de victoire APRÈS l'affichage de l'overlay
+                        if (musicPlayer) {
+                            musicPlayer.switchToVictoryMode();
+                        }
+                    }, 1000);
                 }
 
             } else {

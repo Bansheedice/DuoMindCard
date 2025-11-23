@@ -12,9 +12,11 @@ v0.09.1 = bouton Muted
 v0.10.0 = interface musique
 v0.10.1 = redirection vers la musique hébergé
 v0.10.2 = polish barre de volume
+v0.10.3 = musique de victoire
 
 ** Next step ** 
 - optimiser le responsive
 - Mode difficile
 - Menu principal
-- ajout musique de victoire
+- accéder au lecture lors de la musique de victoire
+- animation victoire comme pallette où feux d'artifice

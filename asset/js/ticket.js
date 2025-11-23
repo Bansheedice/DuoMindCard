@@ -168,17 +168,14 @@ function showResultOverlay(attempts, elapsedTime) {
         viewGridButton.style.transform = "scale(1)";
     };
     viewGridButton.onclick = () => {
+        // La musique de victoire continue pendant qu'on regarde la grille
+        
         // Animation de sortie du contenu
         content.style.opacity = "0";
         content.style.transform = "scale(0.9) translateY(-20px)";
         
         setTimeout(() => {
-            // Cacher le contenu du résultat
             content.style.display = "none";
-            
-            // Réduire l'opacité de l'overlay pour mieux voir la grille
-            // Modifier le dernier chiffre (0.1 à 1.0) pour ajuster la transparence
-            // 0.1 = très transparent, 0.5 = moyen, 0.8 = très sombre
             overlay.style.background = "rgba(0, 0, 0, 0.15)";
             
             // Créer le bouton "Voir le ticket" en bas avec animation
@@ -211,27 +208,27 @@ function showResultOverlay(attempts, elapsedTime) {
                 backButton.style.background = "#FF9800";
                 backButton.style.transform = "translateX(-50%) translateY(0) scale(1)";
             };
-        backButton.onclick = () => {
-            // Restaurer l'overlay et afficher le contenu du ticket avec animation
-            overlay.style.background = "rgba(0, 0, 0, 0.85)";
-            content.style.opacity = "0";
-            content.style.transform = "scale(0.9) translateY(20px)";
-            
-            // Animation douce pour le retour
-            requestAnimationFrame(() => {
+            backButton.onclick = () => {
+                // La musique de victoire continue toujours
+                
+                // Restaurer l'overlay et afficher le contenu du ticket avec animation
+                overlay.style.background = "rgba(0, 0, 0, 0.85)";
+                content.style.opacity = "0";
+                content.style.transform = "scale(0.9) translateY(20px)";
+                
                 requestAnimationFrame(() => {
-                    content.style.display = "block";
-                    content.style.opacity = "1";
-                    content.style.transform = "scale(1) translateY(0)";
+                    requestAnimationFrame(() => {
+                        content.style.display = "block";
+                        content.style.opacity = "1";
+                        content.style.transform = "scale(1) translateY(0)";
+                    });
                 });
-            });
-            
-            backButton.remove();
-        };
+                
+                backButton.remove();
+            };
             
             document.body.appendChild(backButton);
             
-            // Animer l'apparition du bouton
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     backButton.style.opacity = "1";
