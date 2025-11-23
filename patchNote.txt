@@ -6,10 +6,10 @@ v0.04.0 = grille 8 x 8
 v0.05.0 = flip optimiser + polish animation
 v0.06.0 = Ticket de lotterie + score + relancer
 v0.07.0 = Revoir la grille fini
+v0.08.0 = polish swap grid / ticket
 
 ** Next step ** 
 - optimiser le responsive
 - Effets sonores
 - Mode difficile
 - Menu principal
-- polish apparation ticket

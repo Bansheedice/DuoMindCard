@@ -22,12 +22,12 @@ function showResultOverlay(attempts, elapsedTime) {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.85);
+        background: rgba(0, 0, 0, 0);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 1000;
-        animation: fadeIn 0.5s ease;
+        transition: background 0.6s ease;
     `;
 
     // Créer le contenu
@@ -40,7 +40,9 @@ function showResultOverlay(attempts, elapsedTime) {
         text-align: center;
         max-width: 500px;
         box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-        animation: slideUp 0.5s ease;
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     `;
 
     // Titre
@@ -86,7 +88,7 @@ function showResultOverlay(attempts, elapsedTime) {
 
     // En-tête du ticket
     const ticketHeader = document.createElement("div");
-    ticketHeader.textContent = "🎫 TICKET DE LOTTERIE";
+    ticketHeader.textContent = "🎫 TICKET DE RÉUSSITE";
     ticketHeader.style.cssText = `
         font-weight: bold;
         font-size: 1.1rem;
@@ -166,49 +168,77 @@ function showResultOverlay(attempts, elapsedTime) {
         viewGridButton.style.transform = "scale(1)";
     };
     viewGridButton.onclick = () => {
-        // Cacher le contenu du résultat
-        content.style.display = "none";
+        // Animation de sortie du contenu
+        content.style.opacity = "0";
+        content.style.transform = "scale(0.9) translateY(-20px)";
         
-        // Réduire l'opacité de l'overlay pour mieux voir la grille
-        overlay.style.background = "rgba(0, 0, 0, 0)";
-        
-        // Créer le bouton "Voir le ticket" en bas
-        const backButton = document.createElement("button");
-        backButton.id = "backToTicketButton";
-        backButton.textContent = "🎫 Voir le ticket";
-        backButton.style.cssText = `
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #FF9800;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            z-index: 1001;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-        `;
-        backButton.onmouseover = () => {
-            backButton.style.background = "#F57C00";
-            backButton.style.transform = "translateX(-50%) scale(1.05)";
-        };
-        backButton.onmouseout = () => {
-            backButton.style.background = "#FF9800";
-            backButton.style.transform = "translateX(-50%) scale(1)";
-        };
+        setTimeout(() => {
+            // Cacher le contenu du résultat
+            content.style.display = "none";
+            
+            // Réduire l'opacité de l'overlay pour mieux voir la grille
+            // Modifier le dernier chiffre (0.1 à 1.0) pour ajuster la transparence
+            // 0.1 = très transparent, 0.5 = moyen, 0.8 = très sombre
+            overlay.style.background = "rgba(0, 0, 0, 0.15)";
+            
+            // Créer le bouton "Voir le ticket" en bas avec animation
+            const backButton = document.createElement("button");
+            backButton.id = "backToTicketButton";
+            backButton.textContent = "🎫 Voir le ticket";
+            backButton.style.cssText = `
+                position: fixed;
+                bottom: 40px;
+                left: 50%;
+                transform: translateX(-50%) translateY(100px);
+                background: #FF9800;
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                font-size: 1.2rem;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                font-weight: bold;
+                z-index: 1001;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+                opacity: 0;
+            `;
+            backButton.onmouseover = () => {
+                backButton.style.background = "#F57C00";
+                backButton.style.transform = "translateX(-50%) translateY(0) scale(1.05)";
+            };
+            backButton.onmouseout = () => {
+                backButton.style.background = "#FF9800";
+                backButton.style.transform = "translateX(-50%) translateY(0) scale(1)";
+            };
         backButton.onclick = () => {
-            // Restaurer l'overlay et afficher le contenu du ticket
+            // Restaurer l'overlay et afficher le contenu du ticket avec animation
             overlay.style.background = "rgba(0, 0, 0, 0.85)";
-            content.style.display = "block";
+            content.style.opacity = "0";
+            content.style.transform = "scale(0.9) translateY(20px)";
+            
+            // Animation douce pour le retour
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    content.style.display = "block";
+                    content.style.opacity = "1";
+                    content.style.transform = "scale(1) translateY(0)";
+                });
+            });
+            
             backButton.remove();
         };
-        
-        document.body.appendChild(backButton);
+            
+            document.body.appendChild(backButton);
+            
+            // Animer l'apparition du bouton
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    backButton.style.opacity = "1";
+                    backButton.style.transform = "translateX(-50%) translateY(0)";
+                });
+            });
+        }, 400);
     };
 
     // Bouton rejouer
@@ -248,26 +278,15 @@ function showResultOverlay(attempts, elapsedTime) {
     content.appendChild(buttonsContainer);
     overlay.appendChild(content);
 
-    // Ajouter les animations CSS
-    const style = document.createElement("style");
-    style.textContent = `
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { 
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to { 
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-
     // Ajouter l'overlay au body
     document.body.appendChild(overlay);
+
+    // Déclencher l'animation après l'ajout au DOM
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            overlay.style.background = "rgba(0, 0, 0, 0.85)";
+            content.style.opacity = "1";
+            content.style.transform = "scale(1) translateY(0)";
+        });
+    });
 }
