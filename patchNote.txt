@@ -13,6 +13,7 @@ v0.10.0 = interface musique
 v0.10.1 = redirection vers la musique hébergé
 v0.10.2 = polish barre de volume
 v0.10.3 = musique de victoire
+v0.10.4 = animation pallette + feux d'artifice module
 
 ** Next step ** 
 - optimiser le responsive
