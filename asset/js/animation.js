@@ -156,7 +156,7 @@ window.launchFireworks = function () {
 };
 
 window.launchConfetti = function () {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 300; i++) {
         setTimeout(() => {
             confettis.push(new Confetti());
             if (confettis.length === 1 && fireworks.length === 0) animate();

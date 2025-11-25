@@ -15,6 +15,7 @@ v0.10.2 = [POLISH] barre de volume
 v0.10.3 = musique de victoire
 v0.10.4 = [MODULE] animation pallette + feux d'artifice
 v0.11.0 = animation pallette menu ticket + sélection musique de victoire
+v0.11.1 = animation pallette uniquement grille fini + ajustement bouton voir le ticket
 
 ** Next step ** 
 - optimiser le responsive
