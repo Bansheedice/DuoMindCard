@@ -59,6 +59,8 @@ class ComboManager {
         this.comboCount = 0;
         this.comboText = null;
         this.hideTimeout = null;
+        this.maxCombo = 0;
+        this.comboStats = {}; // Stocke le nombre de chaque type de combo (2-hit, 3-hit, etc.)
         this.init();
     }
 
@@ -77,6 +79,11 @@ class ComboManager {
     incrementCombo() {
         this.comboCount++;
 
+        // Mettre à jour le combo maximum
+        if (this.comboCount > this.maxCombo) {
+            this.maxCombo = this.comboCount;
+        }
+
         if (this.comboCount >= 2) {
             // Délai de 500ms pour synchroniser avec l'animation de la carte (glow + pulse)
             setTimeout(() => {
@@ -91,6 +98,14 @@ class ComboManager {
     }
 
     resetCombo() {
+        // Sauvegarder le combo actuel dans les statistiques avant de réinitialiser
+        if (this.comboCount >= 2) {
+            if (!this.comboStats[this.comboCount]) {
+                this.comboStats[this.comboCount] = 0;
+            }
+            this.comboStats[this.comboCount]++;
+        }
+        
         this.comboCount = 0;
         this.hideCombo();
     }
@@ -130,7 +145,7 @@ class ComboManager {
         // Programmer la disparition après 3 secondes
         this.hideTimeout = setTimeout(() => {
             this.hideCombo();
-        }, 1000);
+        }, 3000);
     }
 
     hideCombo() {
@@ -141,6 +156,24 @@ class ComboManager {
 
     getComboCount() {
         return this.comboCount;
+    }
+
+    getMaxCombo() {
+        return this.maxCombo;
+    }
+
+    getComboStats() {
+        return this.comboStats;
+    }
+
+    // Appelé à la fin du jeu pour comptabiliser le dernier combo en cours
+    finalizeComboStats() {
+        if (this.comboCount >= 2) {
+            if (!this.comboStats[this.comboCount]) {
+                this.comboStats[this.comboCount] = 0;
+            }
+            this.comboStats[this.comboCount]++;
+        }
     }
 }
 

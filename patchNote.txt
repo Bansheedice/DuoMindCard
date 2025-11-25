@@ -18,8 +18,10 @@ v0.11.0 = animation pallette menu ticket + sélection musique de victoire
 v0.11.1 = animation pallette uniquement grille fini + ajustement bouton voir le ticket
 v0.11.2 = [MODULE] combo
 v0.12.0 = Combo intégré dans grid.js
+v0.13.0 = Affiché les stats combo
 
 ** Next step ** 
 - optimiser le responsive
 - Mode difficile
 - Menu principal
+- polish l'affiche, le cadre du résultat, le texto combo doit être en dessous du résultat

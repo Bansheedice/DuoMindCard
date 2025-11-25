@@ -1,5 +1,5 @@
 // ==========================================
-// TICKET.JS — VERSION OPTIMISÉE
+// TICKET.JS – VERSION OPTIMISÉE
 // ==========================================
 
 // Stockage de l'ordre des paires trouvées
@@ -28,6 +28,10 @@ function resetTicket() {
 // OVERLAY DE RÉSULTAT
 // ------------------------------------------
 function showResultOverlay(attempts, elapsedTime) {
+
+    // Récupérer les statistiques de combo
+    const maxCombo = typeof comboManager !== 'undefined' ? comboManager.getMaxCombo() : 0;
+    const comboStats = typeof comboManager !== 'undefined' ? comboManager.getComboStats() : {};
 
     // --- Overlay ---
     const overlay = document.createElement("div");
@@ -75,14 +79,89 @@ function showResultOverlay(attempts, elapsedTime) {
         marginBottom: "25px",
         border: "2px solid #444"
     });
-    score.innerHTML = `
+
+    let scoreHTML = `
         <div style="color:white;font-size:1.3rem;margin-bottom:10px;">
             ⏱️ <b>Temps :</b> ${elapsedTime}
         </div>
-        <div style="color:white;font-size:1.3rem;">
+        <div style="color:white;font-size:1.3rem;margin-bottom:10px;">
             🎯 <b>Tentatives :</b> ${attempts}
         </div>
     `;
+
+    // Ajouter le combo maximum si > 0
+    if (maxCombo > 0) {
+        scoreHTML += `
+            <div style="color:#FFD700;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;">
+                🔥 <b>Combo Maximum :</b> ${maxCombo} HIT
+            </div>
+        `;
+    }
+
+    score.innerHTML = scoreHTML;
+
+    // ------------------------------------------
+    // STATISTIQUES DE COMBO (si combos réalisés)
+    // ------------------------------------------
+    let comboStatsContainer = null;
+    const comboKeys = Object.keys(comboStats).map(Number).sort((a, b) => a - b);
+    
+    if (comboKeys.length > 0) {
+        comboStatsContainer = document.createElement("div");
+        applyStyles(comboStatsContainer, {
+            background: "#2a2a2a",
+            borderRadius: "10px",
+            padding: "20px",
+            marginBottom: "25px",
+            border: "2px solid #444"
+        });
+
+        const comboTitle = document.createElement("div");
+        comboTitle.textContent = "📊 STATISTIQUES DE COMBO";
+        applyStyles(comboTitle, {
+            color: "#FFD700",
+            fontSize: "1.2rem",
+            fontWeight: "bold",
+            marginBottom: "15px",
+            textAlign: "center"
+        });
+        comboStatsContainer.appendChild(comboTitle);
+
+        const comboGrid = document.createElement("div");
+        applyStyles(comboGrid, {
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "10px"
+        });
+
+        comboKeys.forEach(comboLevel => {
+            const count = comboStats[comboLevel];
+            const comboItem = document.createElement("div");
+            applyStyles(comboItem, {
+                background: "#1a1a1a",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #555",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+            });
+
+            // Couleur selon le niveau de combo
+            let color = '#FFD700';
+            if (comboLevel >= 10) color = '#FF1493';
+            else if (comboLevel >= 7) color = '#FF4500';
+            else if (comboLevel >= 5) color = '#FF8C00';
+
+            comboItem.innerHTML = `
+                <span style="color:${color};font-weight:bold;font-size:1.1rem;">${comboLevel}-HIT</span>
+                <span style="color:white;font-size:1.1rem;">×${count}</span>
+            `;
+            comboGrid.appendChild(comboItem);
+        });
+
+        comboStatsContainer.appendChild(comboGrid);
+    }
 
     // ------------------------------------------
     // TICKET VISUEL
@@ -252,6 +331,12 @@ function showResultOverlay(attempts, elapsedTime) {
     // Assemblage final
     content.appendChild(title);
     content.appendChild(score);
+    
+    // Ajouter les statistiques de combo si elles existent
+    if (comboStatsContainer) {
+        content.appendChild(comboStatsContainer);
+    }
+    
     content.appendChild(ticketContainer);
     content.appendChild(btnZone);
     overlay.appendChild(content);

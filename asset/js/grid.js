@@ -105,6 +105,11 @@ cards.forEach(symbol => {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
                     const elapsedTime = formatTime(Date.now() - startTime);
                     
+                    // Finaliser les statistiques de combo avant d'afficher les résultats
+                    if (typeof comboManager !== 'undefined') {
+                        comboManager.finalizeComboStats();
+                    }
+                    
                     // Afficher d'abord l'overlay de résultat
                     setTimeout(() => {
                         if (typeof showResultOverlay === 'function') {
