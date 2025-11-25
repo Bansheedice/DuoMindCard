@@ -17,6 +17,7 @@ v0.10.4 = [MODULE] animation pallette + feux d'artifice
 v0.11.0 = animation pallette menu ticket + sélection musique de victoire
 v0.11.1 = animation pallette uniquement grille fini + ajustement bouton voir le ticket
 v0.11.2 = [MODULE] combo
+v0.12.0 = Combo intégré dans grid.js
 
 ** Next step ** 
 - optimiser le responsive

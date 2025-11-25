@@ -81,9 +81,19 @@ cards.forEach(symbol => {
                 card.classList.add("matched");
                 firstCard.classList.add("matched");
 
-                setTimeout(() => playSound("win", "realiste"), 500);
-
                 if (typeof addToTicket === 'function') addToTicket(card.dataset.symbol);
+
+                // *** INCRÉMENTATION DU COMBO ***
+                let willShowCombo = false;
+                if (typeof comboManager !== 'undefined') {
+                    comboManager.incrementCombo();
+                    willShowCombo = comboManager.getComboCount() >= 2;
+                }
+
+                // Son de victoire seulement si pas de combo (combo < 2)
+                if (!willShowCombo) {
+                    setTimeout(() => playSound("win", "realiste"), 500);
+                }
 
                 pairsRemaining--;
                 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
@@ -110,6 +120,11 @@ cards.forEach(symbol => {
 
             } else {
                 playSound("place", "casino");
+
+                // *** RÉINITIALISATION DU COMBO EN CAS D'ÉCHEC ***
+                if (typeof comboManager !== 'undefined') {
+                    comboManager.resetCombo();
+                }
 
                 lock = true;
                 clickStatus.textContent = "Raté ! Les cartes vont se retourner…";
