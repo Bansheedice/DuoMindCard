@@ -92,9 +92,9 @@ function showResultOverlay(attempts, elapsedTime) {
     // Ajouter le combo maximum si > 0
     if (maxCombo > 0) {
         scoreHTML += `
-            <div style="color:#FFD700;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;display:flex;justify-content:space-between;align-items:center;">
-                <span>🔥 <b>Combo Maximum :</b> ${maxCombo} HIT</span>
-                <button id="showComboStatsBtn" style="padding:8px 16px;background:#FF9800;color:white;border:none;border-radius:6px;font-size:1rem;font-weight:bold;cursor:pointer;transition:0.3s;">Détails</button>
+            <div style="color:#FFD700;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;display:flex;justify-content:center;align-items:center;position:relative;">
+                <span>🔥 <b>Meilleur Combo :</b> ${maxCombo} HIT</span>
+                <button id="showComboStatsBtn" style="position:absolute;right:10px;padding:8px 16px;background:#FF9800;color:white;border:none;border-radius:6px;font-size:1rem;font-weight:bold;cursor:pointer;transition:0.3s;">Détails</button>
             </div>
         `;
     }
@@ -183,11 +183,11 @@ function showResultOverlay(attempts, elapsedTime) {
         });
 
         const closeBtn = document.createElement("button");
-        closeBtn.textContent = "✕ Fermer";
+        closeBtn.textContent = "🎫 Revenir sur le ticket";
         applyStyles(closeBtn, {
             width: "100%",
             padding: "12px",
-            background: "#f44336",
+            background: "#FF9800",
             color: "white",
             border: "none",
             borderRadius: "8px",
