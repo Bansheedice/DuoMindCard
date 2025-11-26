@@ -43,6 +43,7 @@ function showResultOverlay(attempts, elapsedTime) {
         justifyContent: "center",
         alignItems: "center",
         transition: "background .6s ease",
+        zIndex: "1500"
     });
 
     // --- Conteneur principal ---
@@ -57,7 +58,9 @@ function showResultOverlay(attempts, elapsedTime) {
         boxShadow: "0 10px 50px rgba(0,0,0,.5)",
         opacity: "0",
         transform: "scale(.8) translateY(20px)",
-        transition: "all .6s cubic-bezier(.34,1.56,.64,1)"
+        transition: "all .6s cubic-bezier(.34,1.56,.64,1)",
+        position: "relative",
+        zIndex: "1501"
     });
 
     // --- Titre ---
@@ -119,7 +122,7 @@ function showResultOverlay(attempts, elapsedTime) {
             padding: "30px",
             border: "3px solid #FF9800",
             boxShadow: "0 10px 50px rgba(0,0,0,.8)",
-            zIndex: "2000",
+            zIndex: "1700",
             opacity: "0",
             pointerEvents: "none",
             transition: "all 0.4s cubic-bezier(.34,1.56,.64,1)",
@@ -132,7 +135,7 @@ function showResultOverlay(attempts, elapsedTime) {
             position: "fixed",
             inset: "0",
             background: "rgba(0,0,0,0)",
-            zIndex: "1999",
+            zIndex: "1699",
             opacity: "0",
             pointerEvents: "none",
             transition: "all 0.3s ease"

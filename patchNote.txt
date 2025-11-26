@@ -21,10 +21,10 @@ v0.12.0 = Combo intégré dans grid.js
 v0.13.0 = Affiché les stats combo
 v0.14.0 = [POLISH] stats combo avec un bouton détail
 v0.14.1 = [POLISH]  bouton stats combo + retour au ticket
+v0.14.2 = [POLISH]  text last combo en dessous du résultat
 
 ** Next step ** 
 - optimiser le responsive
 - Mode difficile
 - Menu principal
 - adapter les icones pour mac
-- ajuster l'overlay résultat par dessus combo
