@@ -19,6 +19,7 @@ v0.11.1 = animation pallette uniquement grille fini + ajustement bouton voir le 
 v0.11.2 = [MODULE] combo
 v0.12.0 = Combo intégré dans grid.js
 v0.13.0 = Affiché les stats combo
+v0.14.0 = [POLISH] stats combo avec un bouton détail
 
 ** Next step ** 
 - optimiser le responsive

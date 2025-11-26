@@ -92,8 +92,9 @@ function showResultOverlay(attempts, elapsedTime) {
     // Ajouter le combo maximum si > 0
     if (maxCombo > 0) {
         scoreHTML += `
-            <div style="color:#FFD700;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;">
-                🔥 <b>Combo Maximum :</b> ${maxCombo} HIT
+            <div style="color:#FFD700;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;display:flex;justify-content:space-between;align-items:center;">
+                <span>🔥 <b>Combo Maximum :</b> ${maxCombo} HIT</span>
+                <button id="showComboStatsBtn" style="padding:8px 16px;background:#FF9800;color:white;border:none;border-radius:6px;font-size:1rem;font-weight:bold;cursor:pointer;transition:0.3s;">Détails</button>
             </div>
         `;
     }
@@ -109,20 +110,41 @@ function showResultOverlay(attempts, elapsedTime) {
     if (comboKeys.length > 0) {
         comboStatsContainer = document.createElement("div");
         applyStyles(comboStatsContainer, {
-            background: "#2a2a2a",
-            borderRadius: "10px",
-            padding: "20px",
-            marginBottom: "25px",
-            border: "2px solid #444"
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%) scale(0.8)",
+            background: "linear-gradient(145deg,#2a2a2a,#1a1a1a)",
+            borderRadius: "15px",
+            padding: "30px",
+            border: "3px solid #FF9800",
+            boxShadow: "0 10px 50px rgba(0,0,0,.8)",
+            zIndex: "2000",
+            opacity: "0",
+            pointerEvents: "none",
+            transition: "all 0.4s cubic-bezier(.34,1.56,.64,1)",
+            maxWidth: "500px",
+            width: "90%"
+        });
+
+        const comboStatsOverlay = document.createElement("div");
+        applyStyles(comboStatsOverlay, {
+            position: "fixed",
+            inset: "0",
+            background: "rgba(0,0,0,0)",
+            zIndex: "1999",
+            opacity: "0",
+            pointerEvents: "none",
+            transition: "all 0.3s ease"
         });
 
         const comboTitle = document.createElement("div");
         comboTitle.textContent = "📊 STATISTIQUES DE COMBO";
         applyStyles(comboTitle, {
-            color: "#FFD700",
-            fontSize: "1.2rem",
+            color: "#FF9800",
+            fontSize: "1.5rem",
             fontWeight: "bold",
-            marginBottom: "15px",
+            marginBottom: "20px",
             textAlign: "center"
         });
         comboStatsContainer.appendChild(comboTitle);
@@ -131,7 +153,8 @@ function showResultOverlay(attempts, elapsedTime) {
         applyStyles(comboGrid, {
             display: "grid",
             gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "10px"
+            gap: "12px",
+            marginBottom: "20px"
         });
 
         comboKeys.forEach(comboLevel => {
@@ -139,28 +162,81 @@ function showResultOverlay(attempts, elapsedTime) {
             const comboItem = document.createElement("div");
             applyStyles(comboItem, {
                 background: "#1a1a1a",
-                padding: "10px",
+                padding: "12px",
                 borderRadius: "8px",
-                border: "1px solid #555",
+                border: "2px solid #555",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center"
             });
 
-            // Couleur selon le niveau de combo
             let color = '#FFD700';
             if (comboLevel >= 10) color = '#FF1493';
             else if (comboLevel >= 7) color = '#FF4500';
             else if (comboLevel >= 5) color = '#FF8C00';
 
             comboItem.innerHTML = `
-                <span style="color:${color};font-weight:bold;font-size:1.1rem;">${comboLevel}-HIT</span>
-                <span style="color:white;font-size:1.1rem;">×${count}</span>
+                <span style="color:${color};font-weight:bold;font-size:1.2rem;">${comboLevel}-HIT</span>
+                <span style="color:white;font-size:1.2rem;">×${count}</span>
             `;
             comboGrid.appendChild(comboItem);
         });
 
+        const closeBtn = document.createElement("button");
+        closeBtn.textContent = "✕ Fermer";
+        applyStyles(closeBtn, {
+            width: "100%",
+            padding: "12px",
+            background: "#f44336",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "1.1rem",
+            fontWeight: "bold",
+            cursor: "pointer",
+            transition: "0.3s"
+        });
+
+        closeBtn.onmouseenter = () => closeBtn.style.transform = "scale(1.02)";
+        closeBtn.onmouseleave = () => closeBtn.style.transform = "scale(1)";
+        closeBtn.onclick = () => {
+            comboStatsContainer.style.opacity = "0";
+            comboStatsContainer.style.transform = "translate(-50%, -50%) scale(0.8)";
+            comboStatsContainer.style.pointerEvents = "none";
+            comboStatsOverlay.style.opacity = "0";
+            comboStatsOverlay.style.pointerEvents = "none";
+        };
+
         comboStatsContainer.appendChild(comboGrid);
+        comboStatsContainer.appendChild(closeBtn);
+        
+        document.body.appendChild(comboStatsOverlay);
+        document.body.appendChild(comboStatsContainer);
+
+        // Gestionnaire d'événement pour le bouton Détails
+        setTimeout(() => {
+            const showStatsBtn = document.getElementById('showComboStatsBtn');
+            if (showStatsBtn) {
+                showStatsBtn.onmouseenter = () => showStatsBtn.style.transform = "scale(1.05)";
+                showStatsBtn.onmouseleave = () => showStatsBtn.style.transform = "scale(1)";
+                showStatsBtn.onclick = () => {
+                    comboStatsOverlay.style.opacity = "1";
+                    comboStatsOverlay.style.pointerEvents = "auto";
+                    comboStatsContainer.style.opacity = "1";
+                    comboStatsContainer.style.transform = "translate(-50%, -50%) scale(1)";
+                    comboStatsContainer.style.pointerEvents = "auto";
+                };
+                
+                // Fermer aussi en cliquant sur l'overlay
+                comboStatsOverlay.onclick = () => {
+                    comboStatsContainer.style.opacity = "0";
+                    comboStatsContainer.style.transform = "translate(-50%, -50%) scale(0.8)";
+                    comboStatsContainer.style.pointerEvents = "none";
+                    comboStatsOverlay.style.opacity = "0";
+                    comboStatsOverlay.style.pointerEvents = "none";
+                };
+            }
+        }, 100);
     }
 
     // ------------------------------------------
@@ -331,12 +407,6 @@ function showResultOverlay(attempts, elapsedTime) {
     // Assemblage final
     content.appendChild(title);
     content.appendChild(score);
-    
-    // Ajouter les statistiques de combo si elles existent
-    if (comboStatsContainer) {
-        content.appendChild(comboStatsContainer);
-    }
-    
     content.appendChild(ticketContainer);
     content.appendChild(btnZone);
     overlay.appendChild(content);
