@@ -11,12 +11,13 @@ const symbols = [
 let cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
 
 // ----------------------------
-// Éléments du DOM
+// Éléments DOM
 // ----------------------------
 const game = document.getElementById("game");
 const clickStatus = document.getElementById("clickStatus");
 const attemptsDisplay = document.getElementById("attempts");
 const remainingDisplay = document.getElementById("remaining");
+const scoreDisplay = document.getElementById("score");
 
 // ----------------------------
 // État du jeu
@@ -27,11 +28,11 @@ let attempts = 0;
 let pairsRemaining = symbols.length;
 let startTime = Date.now();
 
-// ----------------------------
-// Initialisation
-// ----------------------------
 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
 
+// ----------------------------
+// Fonctions utilitaires
+// ----------------------------
 function formatTime(milliseconds) {
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -44,6 +45,76 @@ function playSound(type, style = "realiste") {
         audioManager.style = style;
         audioManager.play(type);
     }
+}
+
+// ----------------------------
+// Système de score intégré
+// ----------------------------
+let score = 0;
+const basePoints = 10; // +10 par paire trouvée
+
+const scoreManager = {
+    getScore() {
+        return score;
+    },
+
+    resetScore() {
+        score = 0;
+        scoreDisplay.textContent = "Score : 0";
+    },
+
+    addPoints(comboValue = 1) {
+        const gained = basePoints * comboValue;
+        score += gained;
+        scoreDisplay.textContent = "Score : " + score;
+        return gained;
+    }
+};
+
+// ----------------------------
+// Animation flottante du score
+// ----------------------------
+function showFloatingScore(cardElement, points) {
+    const floatEl = document.createElement("div");
+
+    // Déterminer la couleur selon le niveau de combo
+    let combo = typeof comboManager !== "undefined" ? comboManager.getComboCount() : 1;
+    let color = '#FFD700'; // Or par défaut
+
+    if (combo >= 10) {
+        color = '#FF1493'; // Rose vif
+    } else if (combo >= 7) {
+        color = '#FF4500'; // Orange rouge
+    } else if (combo >= 5) {
+        color = '#FF8C00'; // Orange foncé
+    }
+
+    floatEl.textContent = `+${points}`;
+    floatEl.style.position = "absolute";
+    floatEl.style.color = color; // ← couleur dynamique selon combo !
+    floatEl.style.fontWeight = "bold";
+    floatEl.style.fontSize = "24px";
+
+    // Contour noir
+    floatEl.style.textShadow =
+        "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000";
+
+    floatEl.style.pointerEvents = "none";
+    floatEl.style.transition = "all 1s ease-out";
+    floatEl.style.zIndex = 1000;
+
+    const rect = cardElement.getBoundingClientRect();
+    floatEl.style.left = rect.left + rect.width / 2 - 20 + "px";
+    floatEl.style.top = rect.top - 20 + "px";
+
+    document.body.appendChild(floatEl);
+
+    setTimeout(() => {
+        floatEl.style.top = rect.top - 60 + "px";
+        floatEl.style.opacity = 0;
+    }, 50);
+
+    setTimeout(() => floatEl.remove(), 1050);
 }
 
 // ----------------------------
@@ -78,19 +149,28 @@ cards.forEach(symbol => {
             attemptsDisplay.textContent = "Tentatives : " + attempts;
 
             if (firstCard.dataset.symbol === card.dataset.symbol) {
+                // Paire identique trouvée
                 card.classList.add("matched");
                 firstCard.classList.add("matched");
 
                 if (typeof addToTicket === 'function') addToTicket(card.dataset.symbol);
 
-                // *** INCRÉMENTATION DU COMBO ***
+                // Gestion du combo
+                let comboCount = 1;
                 let willShowCombo = false;
                 if (typeof comboManager !== 'undefined') {
                     comboManager.incrementCombo();
-                    willShowCombo = comboManager.getComboCount() >= 2;
+                    comboCount = comboManager.getComboCount();
+                    willShowCombo = comboCount >= 2;
                 }
 
-                // Son de victoire seulement si pas de combo (combo < 2)
+                // --- Délai pour synchroniser le +score avec la validation ---
+                setTimeout(() => {
+                    const points = scoreManager.addPoints(comboCount);
+                    showFloatingScore(card, points);
+                    console.log(`+${points} points (combo x${comboCount})`);
+                }, 700);
+
                 if (!willShowCombo) {
                     setTimeout(() => playSound("win", "realiste"), 500);
                 }
@@ -101,22 +181,19 @@ cards.forEach(symbol => {
                 clickStatus.textContent = "Cliquez sur la première carte";
                 firstCard = null;
 
+                // Fin de partie
                 if (pairsRemaining === 0) {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
                     const elapsedTime = formatTime(Date.now() - startTime);
-                    
-                    // Finaliser les statistiques de combo avant d'afficher les résultats
+
                     if (typeof comboManager !== 'undefined') {
                         comboManager.finalizeComboStats();
                     }
-                    
-                    // Afficher d'abord l'overlay de résultat
+
                     setTimeout(() => {
                         if (typeof showResultOverlay === 'function') {
                             showResultOverlay(attempts, elapsedTime);
                         }
-                        
-                        // Basculer vers la musique de victoire APRÈS l'affichage de l'overlay
                         if (musicPlayer) {
                             musicPlayer.switchToVictoryMode();
                         }
@@ -124,9 +201,9 @@ cards.forEach(symbol => {
                 }
 
             } else {
+                // Paire incorrecte
                 playSound("place", "casino");
 
-                // *** RÉINITIALISATION DU COMBO EN CAS D'ÉCHEC ***
                 if (typeof comboManager !== 'undefined') {
                     comboManager.resetCombo();
                 }
