@@ -1,340 +1,415 @@
 // ==========================================
-// TICKET.JS – VERSION OPTIMISÉE
+// TICKET.JS — VERSION COMPLÈTE AVEC FRUITS
 // ==========================================
 
-// Stockage de l'ordre des paires trouvées
 let ticket = [];
 let confettiStarted = false;
 
 // ------------------------------------------
-// UTILITAIRE : appliquer rapidement des styles
+// UTILITAIRES
 // ------------------------------------------
-function applyStyles(el, styles) {
-    Object.assign(el.style, styles);
-}
 
-// Ajouter une paire
-function addToTicket(symbol) {
-    ticket.push(symbol);
-}
+const applyStyles = (el, styles) => Object.assign(el.style, styles);
 
-// Reset du ticket
-function resetTicket() {
-    ticket = [];
-    confettiStarted = false;
-}
+const create = (tag, styles = {}, html = "") => {
+    const el = document.createElement(tag);
+    applyStyles(el, styles);
+    if (html) el.innerHTML = html;
+    return el;
+};
+
+// Couleur selon combo
+const getComboColor = combo =>
+    combo >= 10 ? "#FF1493" :
+    combo >= 7  ? "#FF4500" :
+    combo >= 5  ? "#FF8C00" :
+                  "#FFD700";
 
 // ------------------------------------------
-// OVERLAY DE RÉSULTAT
+// FONCTIONS DE BASE
 // ------------------------------------------
-function showResultOverlay(attempts, elapsedTime) {
 
-    // Récupérer les statistiques de combo
-    const maxCombo = typeof comboManager !== 'undefined' ? comboManager.getMaxCombo() : 0;
-    const comboStats = typeof comboManager !== 'undefined' ? comboManager.getComboStats() : {};
+function addToTicket(symbol) { ticket.push(symbol); }
+function resetTicket() { ticket = []; confettiStarted = false; }
 
-    // --- Overlay ---
-    const overlay = document.createElement("div");
-    applyStyles(overlay, {
+function createOverlay(z = 1500) {
+    return create("div", {
         position: "fixed",
         inset: "0",
         background: "rgba(0,0,0,0)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        transition: "background .6s ease",
-        zIndex: "1500"
+        transition: "background .4s",
+        zIndex: z
     });
+}
 
-    // --- Conteneur principal ---
-    const content = document.createElement("div");
-    applyStyles(content, {
+function createPopup(z = 1550, borderColor = "#4caf50") {
+    return create("div", {
         background: "linear-gradient(145deg,#2a2a2a,#1a1a1a)",
-        border: "3px solid #4caf50",
+        border: `3px solid ${borderColor}`,
         borderRadius: "15px",
-        padding: "40px",
+        padding: "35px",
         textAlign: "center",
         width: "550px",
-        boxShadow: "0 10px 50px rgba(0,0,0,.5)",
+        boxShadow: "0 10px 40px rgba(0,0,0,.5)",
         opacity: "0",
-        transform: "scale(.8) translateY(20px)",
-        transition: "all .6s cubic-bezier(.34,1.56,.64,1)",
-        position: "relative",
-        zIndex: "1501"
+        transform: "scale(.8) translateY(15px)",
+        transition: "all .5s cubic-bezier(.34,1.56,.64,1)",
+        zIndex: z
     });
+}
+
+function createSubWindow(title, borderColor = "#4caf50") {
+    const overlay = create("div", {
+        position: "fixed",
+        inset: "0",
+        background: "rgba(0,0,0,0)",
+        opacity: "0",
+        pointerEvents: "none",
+        transition: ".3s",
+        zIndex: 1699
+    });
+
+    const box = create("div", {
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%) scale(.8)",
+        background: "linear-gradient(145deg,#2a2a2a,#1a1a1a)",
+        border: `3px solid ${borderColor}`,
+        borderRadius: "15px",
+        padding: "30px",
+        width: "90%",
+        maxWidth: "500px",
+        maxHeight: "80vh",
+        overflowY: "auto",
+        opacity: "0",
+        pointerEvents: "none",
+        transition: ".4s cubic-bezier(.34,1.56,.64,1)",
+        zIndex: 1700
+    });
+
+    const titleEl = create("div", {
+        color: borderColor,
+        fontSize: "1.5rem",
+        fontWeight: "bold",
+        marginBottom: "20px",
+        textAlign: "center"
+    }, title);
+
+    box.appendChild(titleEl);
+
+    overlay.onclick = hide;
+    document.body.appendChild(overlay);
+    document.body.appendChild(box);
+
+    function show() {
+        overlay.style.opacity = "1";
+        overlay.style.pointerEvents = "auto";
+        box.style.opacity = "1";
+        box.style.transform = "translate(-50%, -50%) scale(1)";
+        box.style.pointerEvents = "auto";
+    }
+
+    function hide() {
+        box.style.opacity = "0";
+        box.style.transform = "translate(-50%, -50%) scale(.8)";
+        box.style.pointerEvents = "none";
+        overlay.style.opacity = "0";
+        overlay.style.pointerEvents = "none";
+    }
+
+    return { box, show, hide, overlay };
+}
+
+// ------------------------------------------
+// AFFICHAGE DU RESULTAT COMPLET
+// ------------------------------------------
+
+function showResultOverlay(attempts, elapsedTime) {
+
+    const overlay = createOverlay();
+    const content = createPopup();
 
     // --- Titre ---
-    const title = document.createElement("h2");
-    title.textContent = "🎉 RÉSULTAT 🎉";
-    applyStyles(title, {
+    content.appendChild(create("h2", {
         color: "#4caf50",
         fontSize: "2.4rem",
-        marginBottom: "25px",
-        textShadow: "0 0 10px rgba(76,175,80,.5)"
-    });
+        textShadow: "0 0 10px rgba(76,175,80,.5)",
+        marginBottom: "25px"
+    }, "🎉 RÉSULTAT 🎉"));
 
-    // --- Score ---
-    const score = document.createElement("div");
-    applyStyles(score, {
+    // --- Score principal ---
+    const finalScore = scoreManager.getScore();
+    const scoreBox = create("div", {
         background: "#333",
         padding: "20px",
         borderRadius: "10px",
-        marginBottom: "25px",
-        border: "2px solid #444"
+        border: "2px solid #444",
+        marginBottom: "25px"
     });
 
-    let scoreHTML = `
-        <div style="color:white;font-size:1.3rem;margin-bottom:10px;">
-            ⏱️ <b>Temps :</b> ${elapsedTime}
+    scoreBox.innerHTML = `
+        <div style="display:flex;justify-content:space-around;color:white;font-size:1.3rem;margin-bottom:10px;">
+            <div>⏱️ <b>Temps :</b> ${elapsedTime}</div>
+            <div>🎯 <b>Tentatives :</b> ${attempts}</div>
         </div>
-        <div style="color:white;font-size:1.3rem;margin-bottom:10px;">
-            🎯 <b>Tentatives :</b> ${attempts}
+        <div style="color:#4caf50;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;display:flex;justify-content:space-between;align-items:center;">
+            <span>💰 <b>Score Total :</b></span>
+            <span style="font-weight:bold;font-size:1.4rem;">${finalScore} pts</span>
+            <button id="scoreDetailsBtn"
+                style="padding:8px 16px;background:#4caf50;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">
+                Détails
+            </button>
+        </div>
+    `;
+    content.appendChild(scoreBox);
+
+    // --- Détails du score (ticket) ---
+    const scoreHistoryData = scoreManager.getHistory();
+    const scoreDetails = createSubWindow("🧾 DÉTAILS DU SCORE", "#4caf50");
+
+    const receipt = create("div", {
+        background: "white",
+        color: "black",
+        padding: "20px",
+        borderRadius: "8px",
+        fontFamily: "monospace",
+        fontSize: "0.95rem",
+        marginBottom: "20px"
+    });
+
+    // Calcul des points par combo
+    const comboCount = {};
+    scoreHistoryData.forEach(entry => {
+        const lvl = entry.combo || 1;
+        if (!comboCount[lvl]) comboCount[lvl] = 0;
+        comboCount[lvl]++;
+    });
+
+    let receiptHTML = `<div style="border-bottom:2px dashed #888;padding-bottom:10px;margin-bottom:15px;text-align:center;font-weight:bold;">
+        TICKET DE SCORE
+    </div>`;
+
+    Object.keys(comboCount).map(Number).sort((a, b) => a - b).forEach(lvl => {
+        const count = comboCount[lvl];
+        const ptsPerPair = 10 * lvl;
+        const total = ptsPerPair * count;
+        const label = lvl === 1 ? "Sans combo" : `${lvl}-HIT COMBO`;
+        receiptHTML += `
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                <span>${label} (×${count})</span>
+                <span style="font-weight:bold;">${total} pts</span>
+            </div>
+            <div style="color:#666;font-size:0.85rem;margin-bottom:12px;padding-left:10px;">
+                ${ptsPerPair} pts × ${count} paires
+            </div>
+        `;
+    });
+
+    receiptHTML += `
+        <div style="border-top:2px solid #888;margin-top:15px;padding-top:15px;display:flex;justify-content:space-between;font-weight:bold;font-size:1.1rem;">
+            <span>TOTAL</span>
+            <span style="color:#4caf50;">${finalScore} PTS</span>
         </div>
     `;
 
-    // Ajouter le combo maximum si > 0
-    if (maxCombo > 0) {
-        scoreHTML += `
-            <div style="color:#FFD700;font-size:1.3rem;margin-top:15px;padding-top:15px;border-top:1px solid #555;display:flex;justify-content:center;align-items:center;position:relative;">
-                <span>🔥 <b>Meilleur Combo :</b> ${maxCombo} HIT</span>
-                <button id="showComboStatsBtn" style="position:absolute;right:10px;padding:8px 16px;background:#FF9800;color:white;border:none;border-radius:6px;font-size:1rem;font-weight:bold;cursor:pointer;transition:0.3s;">Détails</button>
-            </div>
-        `;
-    }
+    receipt.innerHTML = receiptHTML;
+    scoreDetails.box.appendChild(receipt);
 
-    score.innerHTML = scoreHTML;
+    const closeScoreBtn = create("button", {
+        width: "100%",
+        padding: "12px",
+        marginTop: "20px",
+        background: "#4caf50",
+        color: "white",
+        border: "none",
+        borderRadius: "8px",
+        fontSize: "1.1rem",
+        fontWeight: "bold",
+        cursor: "pointer"
+    }, "🎫 Revenir sur le ticket");
 
-    // ------------------------------------------
-    // STATISTIQUES DE COMBO (si combos réalisés)
-    // ------------------------------------------
-    let comboStatsContainer = null;
-    const comboKeys = Object.keys(comboStats).map(Number).sort((a, b) => a - b);
-    
-    if (comboKeys.length > 0) {
-        comboStatsContainer = document.createElement("div");
-        applyStyles(comboStatsContainer, {
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%) scale(0.8)",
-            background: "linear-gradient(145deg,#2a2a2a,#1a1a1a)",
-            borderRadius: "15px",
-            padding: "30px",
-            border: "3px solid #FF9800",
-            boxShadow: "0 10px 50px rgba(0,0,0,.8)",
-            zIndex: "1700",
-            opacity: "0",
-            pointerEvents: "none",
-            transition: "all 0.4s cubic-bezier(.34,1.56,.64,1)",
-            maxWidth: "500px",
-            width: "90%"
-        });
+    closeScoreBtn.onclick = () => scoreDetails.hide();
+    scoreDetails.box.appendChild(closeScoreBtn);
 
-        const comboStatsOverlay = document.createElement("div");
-        applyStyles(comboStatsOverlay, {
-            position: "fixed",
-            inset: "0",
-            background: "rgba(0,0,0,0)",
-            zIndex: "1699",
-            opacity: "0",
-            pointerEvents: "none",
-            transition: "all 0.3s ease"
-        });
+    // --- Statistiques combo ---
+    const maxCombo = comboManager.getMaxCombo();
+    const comboStats = createSubWindow("📊 STATISTIQUES DE COMBO", "#FF9800");
 
-        const comboTitle = document.createElement("div");
-        comboTitle.textContent = "📊 STATISTIQUES DE COMBO";
-        applyStyles(comboTitle, {
-            color: "#FF9800",
-            fontSize: "1.5rem",
+    const comboHistory = {};
+    scoreHistoryData.forEach(e => {
+        if (e.combo >= 2) comboHistory[e.combo] = (comboHistory[e.combo] || 0) + 1;
+    });
+
+    if (Object.keys(comboHistory).length) {
+
+        const btn = create("button", {
+            padding: "8px 16px",
+            background: "#FF9800",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
             fontWeight: "bold",
-            marginBottom: "20px",
-            textAlign: "center"
-        });
-        comboStatsContainer.appendChild(comboTitle);
+            cursor: "pointer"
+        }, "Détails");
 
-        const comboGrid = document.createElement("div");
-        applyStyles(comboGrid, {
+        const line = create("div", {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingTop: "15px",
+            marginTop: "15px",
+            borderTop: "1px solid #555",
+            color: "#FFD700",
+            fontSize: "1.3rem"
+        }, `
+            <span>🔥 <b>Meilleur Combo :</b></span>
+            <span style="font-size:1.4rem;font-weight:bold;">${maxCombo} HIT</span>
+        `);
+
+        line.appendChild(btn);
+        scoreBox.appendChild(line);
+
+        btn.onclick = () => comboStats.show();
+
+        const grid = create("div", {
             display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
+            gridTemplateColumns: "repeat(2,1fr)",
             gap: "12px",
             marginBottom: "20px"
         });
 
-        comboKeys.forEach(comboLevel => {
-            const count = comboStats[comboLevel];
-            const comboItem = document.createElement("div");
-            applyStyles(comboItem, {
+        Object.keys(comboHistory).sort((a, b) => a - b).forEach(combo => {
+            const color = getComboColor(combo);
+            const box = create("div", {
                 background: "#1a1a1a",
-                padding: "12px",
                 borderRadius: "8px",
                 border: "2px solid #555",
+                padding: "12px",
                 display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-            });
-
-            let color = '#FFD700';
-            if (comboLevel >= 10) color = '#FF1493';
-            else if (comboLevel >= 7) color = '#FF4500';
-            else if (comboLevel >= 5) color = '#FF8C00';
-
-            comboItem.innerHTML = `
-                <span style="color:${color};font-weight:bold;font-size:1.2rem;">${comboLevel}-HIT</span>
-                <span style="color:white;font-size:1.2rem;">×${count}</span>
-            `;
-            comboGrid.appendChild(comboItem);
+                justifyContent: "space-between"
+            }, `
+                <span style="color:${color};font-weight:bold;">${combo}-HIT</span>
+                <span style="color:white;">×${comboHistory[combo]}</span>
+            `);
+            grid.appendChild(box);
         });
 
-        const closeBtn = document.createElement("button");
-        closeBtn.textContent = "🎫 Revenir sur le ticket";
-        applyStyles(closeBtn, {
+        comboStats.box.appendChild(grid);
+
+        const closeComboBtn = create("button", {
             width: "100%",
             padding: "12px",
+            marginTop: "20px",
             background: "#FF9800",
             color: "white",
             border: "none",
             borderRadius: "8px",
             fontSize: "1.1rem",
             fontWeight: "bold",
-            cursor: "pointer",
-            transition: "0.3s"
-        });
+            cursor: "pointer"
+        }, "🎫 Revenir sur le ticket");
 
-        closeBtn.onmouseenter = () => closeBtn.style.transform = "scale(1.02)";
-        closeBtn.onmouseleave = () => closeBtn.style.transform = "scale(1)";
-        closeBtn.onclick = () => {
-            comboStatsContainer.style.opacity = "0";
-            comboStatsContainer.style.transform = "translate(-50%, -50%) scale(0.8)";
-            comboStatsContainer.style.pointerEvents = "none";
-            comboStatsOverlay.style.opacity = "0";
-            comboStatsOverlay.style.pointerEvents = "none";
-        };
-
-        comboStatsContainer.appendChild(comboGrid);
-        comboStatsContainer.appendChild(closeBtn);
-        
-        document.body.appendChild(comboStatsOverlay);
-        document.body.appendChild(comboStatsContainer);
-
-        // Gestionnaire d'événement pour le bouton Détails
-        setTimeout(() => {
-            const showStatsBtn = document.getElementById('showComboStatsBtn');
-            if (showStatsBtn) {
-                showStatsBtn.onmouseenter = () => showStatsBtn.style.transform = "scale(1.05)";
-                showStatsBtn.onmouseleave = () => showStatsBtn.style.transform = "scale(1)";
-                showStatsBtn.onclick = () => {
-                    comboStatsOverlay.style.opacity = "1";
-                    comboStatsOverlay.style.pointerEvents = "auto";
-                    comboStatsContainer.style.opacity = "1";
-                    comboStatsContainer.style.transform = "translate(-50%, -50%) scale(1)";
-                    comboStatsContainer.style.pointerEvents = "auto";
-                };
-                
-                // Fermer aussi en cliquant sur l'overlay
-                comboStatsOverlay.onclick = () => {
-                    comboStatsContainer.style.opacity = "0";
-                    comboStatsContainer.style.transform = "translate(-50%, -50%) scale(0.8)";
-                    comboStatsContainer.style.pointerEvents = "none";
-                    comboStatsOverlay.style.opacity = "0";
-                    comboStatsOverlay.style.pointerEvents = "none";
-                };
-            }
-        }, 100);
+        closeComboBtn.onclick = () => comboStats.hide();
+        comboStats.box.appendChild(closeComboBtn);
     }
 
-    // ------------------------------------------
-    // TICKET VISUEL
-    // ------------------------------------------
+    // --- Bouton détails ---
+    content.addEventListener("click", e => {
+        if (e.target.id === "scoreDetailsBtn") scoreDetails.show();
+    });
 
-    const ticketContainer = document.createElement("div");
-    applyStyles(ticketContainer, {
+    // --- Ticket visuel fruits (placé en dessous) ---
+    const ticketBox = create("div", {
         background: "white",
-        color: "black",
-        borderRadius: "10px",
         padding: "25px",
+        borderRadius: "10px",
         border: "3px dashed #888",
         margin: "25px 0"
     });
 
-    const ticketHeader = document.createElement("div");
-    ticketHeader.textContent = "🎫 TICKET DE RÉUSSITE";
-    applyStyles(ticketHeader, {
-        fontSize: "1.1rem",
-        fontWeight: "bold",
-        marginBottom: "15px",
-        paddingBottom: "10px",
-        borderBottom: "2px dashed #888",
-        textAlign: "center"
-    });
+    ticketBox.append(
+        create("div", {
+            textAlign: "center",
+            fontWeight: "bold",
+            borderBottom: "2px dashed #888",
+            paddingBottom: "10px",
+            marginBottom: "15px",
+            color: "#000000"
+        }, "🎫 TICKET DE RÉUSSITE")
+    );
 
-    const grid = document.createElement("div");
-    applyStyles(grid, {
+    const gridTicket = create("div", {
         display: "grid",
         gridTemplateColumns: "repeat(8,1fr)",
         gap: "8px"
     });
 
     ticket.forEach((sym, i) => {
-        const c = document.createElement("div");
-        c.textContent = sym;
-        applyStyles(c, {
+        gridTicket.appendChild(create("div", {
             fontSize: "1.8rem",
-            padding: "5px",
-            borderRadius: "5px",
             background: i % 2 ? "#e8e8e8" : "#f0f0f0",
             border: "1px solid #ccc",
+            borderRadius: "5px",
+            padding: "5px",
             textAlign: "center"
-        });
-        grid.appendChild(c);
+        }, sym));
     });
 
-    const ticketNumber = document.createElement("div");
-    ticketNumber.textContent = "N° " + Math.random().toString(36).substring(2, 9).toUpperCase();
-    applyStyles(ticketNumber, {
-        marginTop: "15px",
-        paddingTop: "10px",
-        borderTop: "2px dashed #888",
-        fontSize: ".9rem",
-        color: "#666",
-        textAlign: "center",
-        fontFamily: "monospace"
-    });
+    ticketBox.appendChild(gridTicket);
 
-    ticketContainer.appendChild(ticketHeader);
-    ticketContainer.appendChild(grid);
-    ticketContainer.appendChild(ticketNumber);
+    ticketBox.append(
+        create("div", {
+            textAlign: "center",
+            marginTop: "15px",
+            paddingTop: "10px",
+            borderTop: "2px dashed #888",
+            fontFamily: "monospace",
+            color: "#666"
+        }, "N° " + Math.random().toString(36).substring(2, 9).toUpperCase())
+    );
 
-    // ------------------------------------------
-    // BOUTONS
-    // ------------------------------------------
+    content.appendChild(ticketBox);
 
-    const btnZone = document.createElement("div");
-    applyStyles(btnZone, {
+    // --- Boutons bas ---
+    const zone = create("div", {
         display: "flex",
-        gap: "15px",
         justifyContent: "center",
+        gap: "15px",
         marginTop: "25px"
     });
 
-    // --- Bouton VOIR LA GRILLE ---
-    const btnGrid = document.createElement("button");
-    btnGrid.textContent = "🎯 Voir la grille";
-    applyStyles(btnGrid, {
+    const btnGrid = create("button", {
         background: "#2196F3",
         color: "white",
-        border: "none",
         padding: "15px 40px",
         fontSize: "1.2rem",
         borderRadius: "8px",
+        border: "none",
         cursor: "pointer",
-        fontWeight: "bold",
-        transition: ".3s"
-    });
+        fontWeight: "bold"
+    }, "🎯 Voir la grille");
 
-    btnGrid.onmouseenter = () => btnGrid.style.transform = "scale(1.05)";
-    btnGrid.onmouseleave = () => btnGrid.style.transform = "scale(1)";
+    const btnReplay = create("button", {
+        background: "#4caf50",
+        color: "white",
+        padding: "15px 40px",
+        fontSize: "1.2rem",
+        borderRadius: "8px",
+        border: "none",
+        cursor: "pointer",
+        fontWeight: "bold"
+    }, "🔄 Rejouer");
+
+    btnReplay.onclick = () => location.reload();
+    zone.append(btnGrid, btnReplay);
+    content.appendChild(zone);
 
     btnGrid.onclick = () => {
+        // Cacher le contenu principal (résultat + ticket)
         content.style.opacity = "0";
         content.style.transform = "scale(0.9) translateY(-20px)";
 
@@ -342,6 +417,7 @@ function showResultOverlay(attempts, elapsedTime) {
             content.style.display = "none";
             overlay.style.background = "rgba(0,0,0,0.10)";
 
+            // Création du bouton pour revenir sur le ticket
             const back = document.createElement("button");
             back.textContent = "🎫 Voir le ticket";
             applyStyles(back, {
@@ -362,6 +438,7 @@ function showResultOverlay(attempts, elapsedTime) {
                 zIndex: "1600"
             });
 
+            // Fonction du bouton pour revenir au ticket et résultat
             back.onclick = () => {
                 overlay.style.background = "rgba(0,0,0,0.85)";
                 content.style.display = "block";
@@ -371,12 +448,13 @@ function showResultOverlay(attempts, elapsedTime) {
                     content.style.transform = "scale(1) translateY(0)";
                 });
 
-                // --- ❌ aucun relancement de confettis ici ---
+                // Supprime le bouton après utilisation
                 back.remove();
             };
 
             document.body.appendChild(back);
 
+            // Animation d’apparition du bouton
             requestAnimationFrame(() => {
                 back.style.opacity = "1";
                 back.style.transform = "translateX(-50%) translateY(0)";
@@ -385,42 +463,14 @@ function showResultOverlay(attempts, elapsedTime) {
         }, 400);
     };
 
-    // --- Bouton REJOUER ---
-    const btnReplay = document.createElement("button");
-    btnReplay.textContent = "🔄 Rejouer";
-    applyStyles(btnReplay, {
-        background: "#4caf50",
-        color: "white",
-        border: "none",
-        padding: "15px 40px",
-        fontSize: "1.2rem",
-        borderRadius: "8px",
-        cursor: "pointer",
-        fontWeight: "bold",
-        transition: ".3s"
-    });
-
-    btnReplay.onmouseenter = () => btnReplay.style.transform = "scale(1.05)";
-    btnReplay.onmouseleave = () => btnReplay.style.transform = "scale(1)";
-    btnReplay.onclick = () => location.reload();
-
-    btnZone.appendChild(btnGrid);
-    btnZone.appendChild(btnReplay);
-
-    // Assemblage final
-    content.appendChild(title);
-    content.appendChild(score);
-    content.appendChild(ticketContainer);
-    content.appendChild(btnZone);
     overlay.appendChild(content);
     document.body.appendChild(overlay);
 
-    // Animation d'entrée + confettis
+    // --- Animation + confetti ---
     requestAnimationFrame(() => {
-        overlay.style.background = "rgba(0,0,0,0.85)";
+        overlay.style.background = "rgba(0,0,0,.85)";
         content.style.opacity = "1";
         content.style.transform = "scale(1) translateY(0)";
-
         if (!confettiStarted && typeof launchConfetti === "function") {
             launchConfetti();
             confettiStarted = true;

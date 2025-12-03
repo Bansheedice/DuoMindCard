@@ -52,6 +52,7 @@ function playSound(type, style = "realiste") {
 // ----------------------------
 let score = 0;
 const basePoints = 10; // +10 par paire trouvée
+let scoreHistory = []; // Historique des gains de points
 
 const scoreManager = {
     getScore() {
@@ -60,6 +61,7 @@ const scoreManager = {
 
     resetScore() {
         score = 0;
+        scoreHistory = [];
         scoreDisplay.textContent = "Score : 0";
     },
 
@@ -67,7 +69,18 @@ const scoreManager = {
         const gained = basePoints * comboValue;
         score += gained;
         scoreDisplay.textContent = "Score : " + score;
+        
+        // Ajouter à l'historique
+        scoreHistory.push({
+            points: gained,
+            combo: comboValue
+        });
+        
         return gained;
+    },
+    
+    getHistory() {
+        return scoreHistory;
     }
 };
 
