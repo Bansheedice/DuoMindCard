@@ -24,6 +24,7 @@ v0.14.1 = [POLISH] bouton stats combo + retour au ticket
 v0.14.2 = [POLISH] text last combo en dessous du résultat
 v0.15.0 = Score
 v0.15.1 = [POLISH] Affichage Score + détail combo 
+v0.15.2 = [REWORK] détail suite de combo 
 
 ** Next step ** 
 - optimiser le responsive

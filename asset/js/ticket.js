@@ -236,15 +236,38 @@ function showResultOverlay(attempts, elapsedTime) {
     scoreDetails.box.appendChild(closeScoreBtn);
 
     // --- Statistiques combo ---
+    // On garde ton maxCombo actuel
     const maxCombo = comboManager.getMaxCombo();
     const comboStats = createSubWindow("📊 STATISTIQUES DE COMBO", "#FF9800");
 
-    const comboHistory = {};
+    // NOUVEAU : reconstruction de l’historique en détectant les pics
+    const finalComboPeaks = {};  // ex: {7:1, 5:1, 15:1}
+
+    let currentCombo = 0;
     scoreHistoryData.forEach(e => {
-        if (e.combo >= 2) comboHistory[e.combo] = (comboHistory[e.combo] || 0) + 1;
+        const c = e.combo || 0;
+
+        if (c > currentCombo) {
+            // Le combo monte
+            currentCombo = c;
+        } else if (c < currentCombo) {
+            // Le combo retombe -> on enregistre le PIC
+            if (currentCombo >= 2) {
+                finalComboPeaks[currentCombo] =
+                    (finalComboPeaks[currentCombo] || 0) + 1;
+            }
+            currentCombo = c;
+        }
     });
 
-    if (Object.keys(comboHistory).length) {
+    // Si un combo est encore en cours au dernier événement
+    if (currentCombo >= 2) {
+        finalComboPeaks[currentCombo] =
+            (finalComboPeaks[currentCombo] || 0) + 1;
+    }
+
+    // --- Affichage uniquement si au moins un pic ---
+    if (Object.keys(finalComboPeaks).length) {
 
         const btn = create("button", {
             padding: "8px 16px",
@@ -275,6 +298,7 @@ function showResultOverlay(attempts, elapsedTime) {
 
         btn.onclick = () => comboStats.show();
 
+        // Grille d’affichage
         const grid = create("div", {
             display: "grid",
             gridTemplateColumns: "repeat(2,1fr)",
@@ -282,7 +306,8 @@ function showResultOverlay(attempts, elapsedTime) {
             marginBottom: "20px"
         });
 
-        Object.keys(comboHistory).sort((a, b) => a - b).forEach(combo => {
+        // Affiche par ordre croissant
+        Object.keys(finalComboPeaks).map(Number).sort((a, b) => a - b).forEach(combo => {
             const color = getComboColor(combo);
             const box = create("div", {
                 background: "#1a1a1a",
@@ -293,7 +318,7 @@ function showResultOverlay(attempts, elapsedTime) {
                 justifyContent: "space-between"
             }, `
                 <span style="color:${color};font-weight:bold;">${combo}-HIT</span>
-                <span style="color:white;">×${comboHistory[combo]}</span>
+                <span style="color:white;">×${finalComboPeaks[combo]}</span>
             `);
             grid.appendChild(box);
         });
