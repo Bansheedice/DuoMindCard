@@ -90,40 +90,38 @@ const scoreManager = {
 function showFloatingScore(cardElement, points) {
     const floatEl = document.createElement("div");
 
-    // Déterminer la couleur selon le niveau de combo
     let combo = typeof comboManager !== "undefined" ? comboManager.getComboCount() : 1;
-    let color = '#FFD700'; // Or par défaut
+    let color = '#FFD700';
 
-    if (combo >= 10) {
-        color = '#FF1493'; // Rose vif
-    } else if (combo >= 7) {
-        color = '#FF4500'; // Orange rouge
-    } else if (combo >= 5) {
-        color = '#FF8C00'; // Orange foncé
-    }
+    if (combo >= 10) color = '#FF1493';
+    else if (combo >= 7) color = '#FF4500';
+    else if (combo >= 5) color = '#FF8C00';
 
     floatEl.textContent = `+${points}`;
     floatEl.style.position = "absolute";
-    floatEl.style.color = color; // ← couleur dynamique selon combo !
+    floatEl.style.color = color;
     floatEl.style.fontWeight = "bold";
     floatEl.style.fontSize = "24px";
-
-    // Contour noir
+    floatEl.style.pointerEvents = "none";
     floatEl.style.textShadow =
         "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000";
-
-    floatEl.style.pointerEvents = "none";
     floatEl.style.transition = "all 1s ease-out";
     floatEl.style.zIndex = 1000;
 
-    const rect = cardElement.getBoundingClientRect();
-    floatEl.style.left = rect.left + rect.width / 2 - 20 + "px";
-    floatEl.style.top = rect.top - 20 + "px";
+    // Position relative au container
+    const rectCard = cardElement.getBoundingClientRect();
+    const rectGame = game.getBoundingClientRect();
 
-    document.body.appendChild(floatEl);
+    const left = rectCard.left - rectGame.left + rectCard.width / 2 - 20;
+    const top  = rectCard.top - rectGame.top - 20;
+
+    floatEl.style.left = `${left}px`;
+    floatEl.style.top = `${top}px`;
+
+    game.appendChild(floatEl);
 
     setTimeout(() => {
-        floatEl.style.top = rect.top - 60 + "px";
+        floatEl.style.top = `${top - 40}px`;
         floatEl.style.opacity = 0;
     }, 50);
 

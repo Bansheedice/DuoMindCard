@@ -26,10 +26,9 @@ v0.15.0 = Score
 v0.15.1 = [POLISH] Affichage Score + détail combo 
 v0.15.2 = [REWORK] détail suite de combo 
 v0.15.3 = [POLISH] new Background  
+v0.15.4 = [FIX] animation flottant score  
 
 ** Next step ** 
 - optimiser le responsive
-- Mode difficile
 - Menu principal
 - adapter les icones pour mac
-- polish affiache socre
