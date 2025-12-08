@@ -27,8 +27,14 @@ v0.15.1 = [POLISH] Affichage Score + détail combo
 v0.15.2 = [REWORK] détail suite de combo 
 v0.15.3 = [POLISH] new Background  
 v0.15.4 = [FIX] animation flottant score  
+v0.15.5 = [BRAINSTORM] catch idea dans idea.html  
 
 ** Next step ** 
 - optimiser le responsive
 - Menu principal
 - adapter les icones pour mac
+
+** Gagnat **
+- maximum de combo
+- nombre de tentative faible
+- le numéro de ticket correspont score + combo + lettre fruit
