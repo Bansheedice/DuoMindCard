@@ -1,3 +1,8 @@
+// ==========================================
+// GRID.JS — JEU DE CARTES JUMEAUX
+// Avec combos, vitesse et efficacité
+// ==========================================
+
 // ----------------------------
 // Données
 // ----------------------------
@@ -27,6 +32,9 @@ let lock = false;
 let attempts = 0;
 let pairsRemaining = symbols.length;
 let startTime = Date.now();
+
+// Pour le bonus de vitesse
+let lastPairTime = Date.now();
 
 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;
 
@@ -69,20 +77,44 @@ const scoreManager = {
         const gained = basePoints * comboValue;
         score += gained;
         scoreDisplay.textContent = "Score : " + score;
-        
-        // Ajouter à l'historique
+
         scoreHistory.push({
             points: gained,
             combo: comboValue
         });
-        
+
         return gained;
     },
-    
+
+    applyFinalMultiplier(multiplier) {
+        score = Math.round(score * multiplier);
+        scoreDisplay.textContent = "Score : " + score;
+
+        scoreHistory.push({
+            points: score,
+            combo: "EFFICIENCY",
+            multiplier
+        });
+    },
+
     getHistory() {
         return scoreHistory;
     }
 };
+
+// ----------------------------
+// Bonus de vitesse
+// ----------------------------
+function getSpeedMultiplier() {
+    const now = Date.now();
+    const deltaSec = (now - lastPairTime) / 1000;
+    lastPairTime = now;
+
+    if (deltaSec < 2) return 3;
+    if (deltaSec < 4) return 2;
+    if (deltaSec < 6) return 1.5;
+    return 1;
+}
 
 // ----------------------------
 // Animation flottante du score
@@ -108,7 +140,6 @@ function showFloatingScore(cardElement, points) {
     floatEl.style.transition = "all 1s ease-out";
     floatEl.style.zIndex = 1000;
 
-    // Position relative au container
     const rectCard = cardElement.getBoundingClientRect();
     const rectGame = game.getBoundingClientRect();
 
@@ -160,13 +191,12 @@ cards.forEach(symbol => {
             attemptsDisplay.textContent = "Tentatives : " + attempts;
 
             if (firstCard.dataset.symbol === card.dataset.symbol) {
-                // Paire identique trouvée
+                // Paire correcte
                 card.classList.add("matched");
                 firstCard.classList.add("matched");
 
                 if (typeof addToTicket === 'function') addToTicket(card.dataset.symbol);
 
-                // Gestion du combo
                 let comboCount = 1;
                 let willShowCombo = false;
                 if (typeof comboManager !== 'undefined') {
@@ -175,11 +205,14 @@ cards.forEach(symbol => {
                     willShowCombo = comboCount >= 2;
                 }
 
-                // --- Délai pour synchroniser le +score avec la validation ---
                 setTimeout(() => {
-                    const points = scoreManager.addPoints(comboCount);
+                    // --- BONUS VITESSE ---
+                    const speedMultiplier = getSpeedMultiplier();
+
+                    const points = scoreManager.addPoints(comboCount * speedMultiplier);
                     showFloatingScore(card, points);
-                    console.log(`+${points} points (combo x${comboCount})`);
+
+                    console.log(`+${points} points (combo x${comboCount}, vitesse x${speedMultiplier})`);
                 }, 700);
 
                 if (!willShowCombo) {
@@ -192,10 +225,19 @@ cards.forEach(symbol => {
                 clickStatus.textContent = "Cliquez sur la première carte";
                 firstCard = null;
 
-                // Fin de partie
+                // --------------------------
+                // FIN DE PARTIE
+                // --------------------------
                 if (pairsRemaining === 0) {
                     clickStatus.textContent = "🎉 Bravo ! Toutes les paires sont trouvées !";
                     const elapsedTime = formatTime(Date.now() - startTime);
+
+                    // BONUS D’EFFICACITÉ
+                    const totalPairs = symbols.length;
+                    const pairsFound = totalPairs;
+                    const efficience = attempts > 0 ? pairsFound / attempts : 1;
+                    const efficiencyMultiplier = 0.5 + efficience;
+                    scoreManager.applyFinalMultiplier(efficiencyMultiplier);
 
                     if (typeof comboManager !== 'undefined') {
                         comboManager.finalizeComboStats();
