@@ -28,7 +28,8 @@ v0.15.2 = [REWORK] détail suite de combo
 v0.15.3 = [POLISH] new Background  
 v0.15.4 = [FIX] animation flottant score  
 v0.15.5 = [BRAINSTORM] catch idea dans idea.html  
-v0.16.0 = [POLISH] score : Bonus de vitesse par paire + Bonus d’efficacité 
+v0.16.0 = [POLISH] calcul score : Bonus de vitesse par paire + Bonus d’efficacité 
+v0.16.1 = [POLISH] ticket score : affichage par paires 
 
 ** Next step ** 
 - optimiser le responsive

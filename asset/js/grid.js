@@ -73,16 +73,18 @@ const scoreManager = {
         scoreDisplay.textContent = "Score : 0";
     },
 
-    addPoints(comboValue = 1) {
-        const gained = basePoints * comboValue;
+    addPair(combo, speed) {
+        const gained = basePoints * combo * speed;
         score += gained;
-        scoreDisplay.textContent = "Score : " + score;
 
         scoreHistory.push({
-            points: gained,
-            combo: comboValue
+            base: basePoints,
+            combo,
+            speed,
+            points: gained
         });
 
+        scoreDisplay.textContent = "Score : " + score;
         return gained;
     },
 
@@ -198,26 +200,24 @@ cards.forEach(symbol => {
                 if (typeof addToTicket === 'function') addToTicket(card.dataset.symbol);
 
                 let comboCount = 1;
-                let willShowCombo = false;
                 if (typeof comboManager !== 'undefined') {
                     comboManager.incrementCombo();
                     comboCount = comboManager.getComboCount();
-                    willShowCombo = comboCount >= 2;
                 }
 
                 setTimeout(() => {
                     // --- BONUS VITESSE ---
                     const speedMultiplier = getSpeedMultiplier();
 
-                    const points = scoreManager.addPoints(comboCount * speedMultiplier);
+                    const points = scoreManager.addPair(comboCount, speedMultiplier);
                     showFloatingScore(card, points);
 
-                    console.log(`+${points} points (combo x${comboCount}, vitesse x${speedMultiplier})`);
+                    console.log(
+                        `+${points} points (combo x${comboCount}, vitesse x${speedMultiplier})`
+                    );
                 }, 700);
 
-                if (!willShowCombo) {
-                    setTimeout(() => playSound("win", "realiste"), 500);
-                }
+                playSound("win", "realiste");
 
                 pairsRemaining--;
                 remainingDisplay.textContent = "Paires restantes : " + pairsRemaining;

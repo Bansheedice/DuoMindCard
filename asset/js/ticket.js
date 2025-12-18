@@ -1,5 +1,6 @@
 // ==========================================
 // TICKET.JS — VERSION COMPLÈTE AVEC FRUITS
+// ET TICKET DE SCORE DÉTAILLÉ
 // ==========================================
 
 let ticket = [];
@@ -167,7 +168,7 @@ function showResultOverlay(attempts, elapsedTime) {
     `;
     content.appendChild(scoreBox);
 
-    // --- Détails du score (ticket) ---
+    // --- Détails du score (ticket détaillé par paire) ---
     const scoreHistoryData = scoreManager.getHistory();
     const scoreDetails = createSubWindow("🧾 DÉTAILS DU SCORE", "#4caf50");
 
@@ -181,34 +182,26 @@ function showResultOverlay(attempts, elapsedTime) {
         marginBottom: "20px"
     });
 
-    // Calcul des points par combo
-    const comboCount = {};
-    scoreHistoryData.forEach(entry => {
-        const lvl = entry.combo || 1;
-        if (!comboCount[lvl]) comboCount[lvl] = 0;
-        comboCount[lvl]++;
-    });
-
     let receiptHTML = `<div style="border-bottom:2px dashed #888;padding-bottom:10px;margin-bottom:15px;text-align:center;font-weight:bold;">
         TICKET DE SCORE
     </div>`;
 
-    Object.keys(comboCount).map(Number).sort((a, b) => a - b).forEach(lvl => {
-        const count = comboCount[lvl];
-        const ptsPerPair = 10 * lvl;
-        const total = ptsPerPair * count;
-        const label = lvl === 1 ? "Sans combo" : `${lvl}-HIT COMBO`;
-        receiptHTML += `
+    // Affichage détaillé de chaque paire
+    scoreHistoryData.forEach((entry, i) => {
+        if (entry.combo && entry.speed && entry.points) {
+            receiptHTML += `
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                <span>${label} (×${count})</span>
-                <span style="font-weight:bold;">${total} pts</span>
+                <span>Paire ${i+1} (${entry.combo}-HIT, vitesse x${entry.speed})</span>
+                <span style="font-weight:bold;">+${entry.points} pts</span>
             </div>
             <div style="color:#666;font-size:0.85rem;margin-bottom:12px;padding-left:10px;">
-                ${ptsPerPair} pts × ${count} paires
+                ${basePoints} pts × ${entry.combo} combo × vitesse ${entry.speed}
             </div>
-        `;
+            `;
+        }
     });
 
+    // Total final
     receiptHTML += `
         <div style="border-top:2px solid #888;margin-top:15px;padding-top:15px;display:flex;justify-content:space-between;font-weight:bold;font-size:1.1rem;">
             <span>TOTAL</span>
@@ -219,6 +212,7 @@ function showResultOverlay(attempts, elapsedTime) {
     receipt.innerHTML = receiptHTML;
     scoreDetails.box.appendChild(receipt);
 
+    // --- Bouton fermeture ---
     const closeScoreBtn = create("button", {
         width: "100%",
         padding: "12px",
@@ -236,39 +230,28 @@ function showResultOverlay(attempts, elapsedTime) {
     scoreDetails.box.appendChild(closeScoreBtn);
 
     // --- Statistiques combo ---
-    // On garde ton maxCombo actuel
     const maxCombo = comboManager.getMaxCombo();
     const comboStats = createSubWindow("📊 STATISTIQUES DE COMBO", "#FF9800");
 
-    // NOUVEAU : reconstruction de l’historique en détectant les pics
-    const finalComboPeaks = {};  // ex: {7:1, 5:1, 15:1}
-
+    const finalComboPeaks = {};
     let currentCombo = 0;
+
     scoreHistoryData.forEach(e => {
         const c = e.combo || 0;
 
         if (c > currentCombo) {
-            // Le combo monte
             currentCombo = c;
         } else if (c < currentCombo) {
-            // Le combo retombe -> on enregistre le PIC
             if (currentCombo >= 2) {
-                finalComboPeaks[currentCombo] =
-                    (finalComboPeaks[currentCombo] || 0) + 1;
+                finalComboPeaks[currentCombo] = (finalComboPeaks[currentCombo] || 0) + 1;
             }
             currentCombo = c;
         }
     });
 
-    // Si un combo est encore en cours au dernier événement
-    if (currentCombo >= 2) {
-        finalComboPeaks[currentCombo] =
-            (finalComboPeaks[currentCombo] || 0) + 1;
-    }
+    if (currentCombo >= 2) finalComboPeaks[currentCombo] = (finalComboPeaks[currentCombo] || 0) + 1;
 
-    // --- Affichage uniquement si au moins un pic ---
     if (Object.keys(finalComboPeaks).length) {
-
         const btn = create("button", {
             padding: "8px 16px",
             background: "#FF9800",
@@ -298,7 +281,6 @@ function showResultOverlay(attempts, elapsedTime) {
 
         btn.onclick = () => comboStats.show();
 
-        // Grille d’affichage
         const grid = create("div", {
             display: "grid",
             gridTemplateColumns: "repeat(2,1fr)",
@@ -306,7 +288,6 @@ function showResultOverlay(attempts, elapsedTime) {
             marginBottom: "20px"
         });
 
-        // Affiche par ordre croissant
         Object.keys(finalComboPeaks).map(Number).sort((a, b) => a - b).forEach(combo => {
             const color = getComboColor(combo);
             const box = create("div", {
@@ -347,7 +328,7 @@ function showResultOverlay(attempts, elapsedTime) {
         if (e.target.id === "scoreDetailsBtn") scoreDetails.show();
     });
 
-    // --- Ticket visuel fruits (placé en dessous) ---
+    // --- Ticket visuel fruits ---
     const ticketBox = create("div", {
         background: "white",
         padding: "25px",
@@ -434,7 +415,6 @@ function showResultOverlay(attempts, elapsedTime) {
     content.appendChild(zone);
 
     btnGrid.onclick = () => {
-        // Cacher le contenu principal (résultat + ticket)
         content.style.opacity = "0";
         content.style.transform = "scale(0.9) translateY(-20px)";
 
@@ -442,7 +422,6 @@ function showResultOverlay(attempts, elapsedTime) {
             content.style.display = "none";
             overlay.style.background = "rgba(0,0,0,0.10)";
 
-            // Création du bouton pour revenir sur le ticket
             const back = document.createElement("button");
             back.textContent = "🎫 Voir le ticket";
             applyStyles(back, {
@@ -463,23 +442,17 @@ function showResultOverlay(attempts, elapsedTime) {
                 zIndex: "1600"
             });
 
-            // Fonction du bouton pour revenir au ticket et résultat
             back.onclick = () => {
                 overlay.style.background = "rgba(0,0,0,0.85)";
                 content.style.display = "block";
-
                 requestAnimationFrame(() => {
                     content.style.opacity = "1";
                     content.style.transform = "scale(1) translateY(0)";
                 });
-
-                // Supprime le bouton après utilisation
                 back.remove();
             };
 
             document.body.appendChild(back);
-
-            // Animation d’apparition du bouton
             requestAnimationFrame(() => {
                 back.style.opacity = "1";
                 back.style.transform = "translateX(-50%) translateY(0)";
